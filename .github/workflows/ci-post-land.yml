@@ -4,7 +4,7 @@ on:
   create:
     branches: [main, release-*]
   push:
-    branches: [main, release-*] # "gha-test-*"
+    branches: [main, release-*, gha-test-1] # "gha-test-*"
 
 defaults:
   run:
