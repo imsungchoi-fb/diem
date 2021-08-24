@@ -7,7 +7,7 @@ use crate::{
 };
 use diem_config::config::NodeConfig;
 use diem_infallible::{Mutex, RwLock};
-use diem_types::transaction::SignedTransaction;
+use diem_types::transaction::DiemSignedTransaction;
 use proptest::{
     arbitrary::any,
     prelude::*,
@@ -18,9 +18,9 @@ use storage_interface::mock::MockDbReader;
 use vm_validator::mocks::mock_vm_validator::MockVMValidator;
 
 pub fn mempool_incoming_transactions_strategy(
-) -> impl Strategy<Value = (Vec<SignedTransaction>, TimelineState)> {
+) -> impl Strategy<Value = (Vec<DiemSignedTransaction>, TimelineState)> {
     (
-        proptest::collection::vec(any::<SignedTransaction>(), 0..100),
+        proptest::collection::vec(any::<DiemSignedTransaction>(), 0..100),
         prop_oneof![
             Just(TimelineState::NotReady),
             Just(TimelineState::NonQualified)
@@ -29,7 +29,7 @@ pub fn mempool_incoming_transactions_strategy(
 }
 
 pub fn test_mempool_process_incoming_transactions_impl(
-    txns: Vec<SignedTransaction>,
+    txns: Vec<DiemSignedTransaction>,
     timeline_state: TimelineState,
 ) {
     let config = NodeConfig::default();

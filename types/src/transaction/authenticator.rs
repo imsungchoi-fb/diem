@@ -18,9 +18,15 @@ use diem_crypto_derive::{CryptoHasher, DeserializeKey, SerializeKey};
 #[cfg(any(test, feature = "fuzzing"))]
 use proptest_derive::Arbitrary;
 use rand::{rngs::OsRng, Rng};
-use serde::{Deserialize, Serialize};
-use std::{convert::TryFrom, fmt, str::FromStr};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use std::{convert::TryFrom, fmt, fmt::Debug, hash::Hash, str::FromStr};
 use thiserror::Error;
+
+pub trait TransactionAuthenticator:
+    Clone + Eq + PartialEq + Hash + Serialize + DeserializeOwned + Debug
+{
+    fn verify(&self, raw_txn: &RawTransaction) -> Result<()>;
+}
 
 /// Maximum number of signatures supported in `TransactionAuthenticator`,
 /// across all `AccountAuthenticator`s included.
@@ -41,7 +47,7 @@ pub enum AuthenticationError {
 /// under the participating signer's account address.
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
-pub enum TransactionAuthenticator {
+pub enum DiemTransactionAuthenticator {
     /// Single signature
     Ed25519 {
         public_key: Validatable<Ed25519PublicKey>,
@@ -60,7 +66,7 @@ pub enum TransactionAuthenticator {
     },
 }
 
-impl TransactionAuthenticator {
+impl DiemTransactionAuthenticator {
     /// Create a single-signature ed25519 authenticator
     pub fn ed25519(public_key: Ed25519PublicKey, signature: Ed25519Signature) -> Self {
         Self::Ed25519 {
@@ -179,7 +185,13 @@ impl TransactionAuthenticator {
     }
 }
 
-impl fmt::Display for TransactionAuthenticator {
+impl TransactionAuthenticator for DiemTransactionAuthenticator {
+    fn verify(&self, raw_txn: &RawTransaction) -> Result<()> {
+        self.verify(raw_txn)
+    }
+}
+
+impl fmt::Display for DiemTransactionAuthenticator {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Ed25519 {
@@ -188,7 +200,7 @@ impl fmt::Display for TransactionAuthenticator {
             } => {
                 write!(
                     f,
-                    "TransactionAuthenticator[scheme: Ed25519, sender: {}]",
+                    "DiemTransactionAuthenticator[scheme: Ed25519, sender: {}]",
                     self.sender()
                 )
             }
@@ -198,7 +210,7 @@ impl fmt::Display for TransactionAuthenticator {
             } => {
                 write!(
                     f,
-                    "TransactionAuthenticator[scheme: MultiEd25519, sender: {}]",
+                    "DiemTransactionAuthenticator[scheme: MultiEd25519, sender: {}]",
                     self.sender()
                 )
             }
@@ -217,7 +229,7 @@ impl fmt::Display for TransactionAuthenticator {
                 }
                 write!(
                     f,
-                    "TransactionAuthenticator[\n\
+                    "DiemTransactionAuthenticator[\n\
                         \tscheme: MultiAgent, \n\
                         \tsender: {}\n\
                         \tsecondary signer addresses: {}\n\

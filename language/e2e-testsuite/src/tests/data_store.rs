@@ -4,7 +4,7 @@
 use bytecode_verifier::verify_module;
 use compiler::Compiler;
 use diem_types::{
-    transaction::{Module, SignedTransaction, Transaction, TransactionStatus},
+    transaction::{DiemSignedTransaction, Module, Transaction, TransactionStatus},
     vm_status::KeptVMStatus,
 };
 use language_e2e_tests::{
@@ -203,7 +203,7 @@ fn change_after_move() {
     executor.apply_write_set(output.write_set());
 }
 
-fn add_module_txn(sender: &AccountData, seq_num: u64) -> (CompiledModule, SignedTransaction) {
+fn add_module_txn(sender: &AccountData, seq_num: u64) -> (CompiledModule, DiemSignedTransaction) {
     let module_code = format!(
         "
         module 0x{}.M {{
@@ -264,7 +264,7 @@ fn add_resource_txn(
     sender: &AccountData,
     seq_num: u64,
     extra_deps: Vec<CompiledModule>,
-) -> SignedTransaction {
+) -> DiemSignedTransaction {
     let program = format!(
         "
             import 0x{}.M;
@@ -290,7 +290,7 @@ fn remove_resource_txn(
     sender: &AccountData,
     seq_num: u64,
     extra_deps: Vec<CompiledModule>,
-) -> SignedTransaction {
+) -> DiemSignedTransaction {
     let program = format!(
         "
             import 0x{}.M;
@@ -316,7 +316,7 @@ fn borrow_resource_txn(
     sender: &AccountData,
     seq_num: u64,
     extra_deps: Vec<CompiledModule>,
-) -> SignedTransaction {
+) -> DiemSignedTransaction {
     let program = format!(
         "
             import 0x{}.M;
@@ -342,7 +342,7 @@ fn change_resource_txn(
     sender: &AccountData,
     seq_num: u64,
     extra_deps: Vec<CompiledModule>,
-) -> SignedTransaction {
+) -> DiemSignedTransaction {
     let program = format!(
         "
             import 0x{}.M;

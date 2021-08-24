@@ -4,7 +4,7 @@
 use crate::{
     account_address::AccountAddress,
     chain_id::ChainId,
-    transaction::{RawTransaction, SignedTransaction, TransactionPayload},
+    transaction::{DiemSignedTransaction, RawTransaction, SignedTransaction, TransactionPayload},
 };
 use anyhow::Result;
 use chrono::Utc;
@@ -33,7 +33,7 @@ pub fn create_unsigned_txn(
 }
 
 pub trait TransactionSigner {
-    fn sign_txn(&self, raw_txn: RawTransaction) -> Result<SignedTransaction>;
+    fn sign_txn(&self, raw_txn: RawTransaction) -> Result<DiemSignedTransaction>;
 }
 
 /// Craft a transaction request.
@@ -47,7 +47,7 @@ pub fn create_user_txn<T: TransactionSigner + ?Sized>(
     gas_currency_code: String,
     txn_expiration_duration_secs: i64, // for compatibility with UTC's timestamp.
     chain_id: ChainId,
-) -> Result<SignedTransaction> {
+) -> Result<DiemSignedTransaction> {
     let raw_txn = create_unsigned_txn(
         payload,
         sender_address,
@@ -62,7 +62,7 @@ pub fn create_user_txn<T: TransactionSigner + ?Sized>(
 }
 
 impl TransactionSigner for KeyPair<Ed25519PrivateKey, Ed25519PublicKey> {
-    fn sign_txn(&self, raw_txn: RawTransaction) -> Result<SignedTransaction> {
+    fn sign_txn(&self, raw_txn: RawTransaction) -> Result<DiemSignedTransaction> {
         let signature = self.private_key.sign(&raw_txn);
         Ok(SignedTransaction::new(
             raw_txn,

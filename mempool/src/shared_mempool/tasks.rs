@@ -22,7 +22,7 @@ use diem_metrics::HistogramTimer;
 use diem_types::{
     mempool_status::{MempoolStatus, MempoolStatusCode},
     on_chain_config::OnChainConfigPayload,
-    transaction::SignedTransaction,
+    transaction::{DiemSignedTransaction, SignedTransaction},
     vm_status::DiscardedVMStatus,
 };
 use futures::{channel::oneshot, stream::FuturesUnordered};
@@ -77,7 +77,7 @@ pub(crate) fn execute_broadcast<V>(
 /// Processes transactions directly submitted by client.
 pub(crate) async fn process_client_transaction_submission<V>(
     smp: SharedMempool<V>,
-    transaction: SignedTransaction,
+    transaction: DiemSignedTransaction,
     callback: oneshot::Sender<Result<SubmissionStatus>>,
     timer: HistogramTimer,
 ) where
@@ -104,7 +104,7 @@ pub(crate) async fn process_client_transaction_submission<V>(
 /// Processes transactions from other nodes.
 pub(crate) async fn process_transaction_broadcast<V>(
     mut smp: SharedMempool<V>,
-    transactions: Vec<SignedTransaction>,
+    transactions: Vec<DiemSignedTransaction>,
     request_id: Vec<u8>,
     timeline_state: TimelineState,
     peer: PeerNetworkId,
@@ -192,7 +192,7 @@ fn is_txn_retryable(result: SubmissionStatus) -> bool {
 /// and returns a vector containing AdmissionControlStatus.
 pub(crate) async fn process_incoming_transactions<V>(
     smp: &SharedMempool<V>,
-    transactions: Vec<SignedTransaction>,
+    transactions: Vec<DiemSignedTransaction>,
     timeline_state: TimelineState,
 ) -> Vec<SubmissionStatusBundle>
 where

@@ -7,7 +7,7 @@ use diem_types::{
     account_address::AccountAddress,
     account_config::AccountResource,
     on_chain_config::{DiemVersion, OnChainConfigPayload, VMConfig, VMPublishingOption},
-    transaction::{SignedTransaction, VMValidatorResult},
+    transaction::{DiemSignedTransaction, VMValidatorResult},
 };
 use diem_vm::DiemVM;
 use fail::fail_point;
@@ -23,7 +23,7 @@ pub trait TransactionValidation: Send + Sync + Clone {
     type ValidationInstance: diem_vm::VMValidator;
 
     /// Validate a txn from client
-    fn validate_transaction(&self, _txn: SignedTransaction) -> Result<VMValidatorResult>;
+    fn validate_transaction(&self, _txn: DiemSignedTransaction) -> Result<VMValidatorResult>;
 
     /// Restart the transaction validation instance
     fn restart(&mut self, config: OnChainConfigPayload) -> Result<()>;
@@ -55,7 +55,7 @@ impl VMValidator {
 impl TransactionValidation for VMValidator {
     type ValidationInstance = DiemVM;
 
-    fn validate_transaction(&self, txn: SignedTransaction) -> Result<VMValidatorResult> {
+    fn validate_transaction(&self, txn: DiemSignedTransaction) -> Result<VMValidatorResult> {
         fail_point!("vm_validator::validate_transaction", |_| {
             Err(anyhow::anyhow!(
                 "Injected error in vm_validator::validate_transaction"

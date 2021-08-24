@@ -12,7 +12,7 @@ use crate::{
 use diem_proptest_helpers::Index;
 use diem_types::{
     account_config,
-    transaction::{SignedTransaction, TransactionStatus},
+    transaction::{DiemSignedTransaction, TransactionStatus},
     vm_status::{AbortLocation, KeptVMStatus, StatusCode},
 };
 use proptest::prelude::*;
@@ -35,7 +35,7 @@ impl AUTransactionGen for CreateAccountGen {
     fn apply(
         &self,
         universe: &mut AccountUniverse,
-    ) -> (SignedTransaction, (TransactionStatus, u64)) {
+    ) -> (DiemSignedTransaction, (TransactionStatus, u64)) {
         let sender = universe.pick(self.sender).1;
 
         let txn = create_account_txn(
@@ -90,7 +90,7 @@ impl AUTransactionGen for CreateExistingAccountGen {
     fn apply(
         &self,
         universe: &mut AccountUniverse,
-    ) -> (SignedTransaction, (TransactionStatus, u64)) {
+    ) -> (DiemSignedTransaction, (TransactionStatus, u64)) {
         let AccountPair {
             account_1: sender,
             account_2: receiver,

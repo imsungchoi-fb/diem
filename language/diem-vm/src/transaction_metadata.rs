@@ -6,7 +6,7 @@ use diem_types::{
     account_address::AccountAddress,
     chain_id::ChainId,
     transaction::{
-        authenticator::AuthenticationKeyPreimage, SignedTransaction, TransactionPayload,
+        authenticator::AuthenticationKeyPreimage, DiemSignedTransaction, TransactionPayload,
     },
 };
 use move_core_types::gas_schedule::{
@@ -29,7 +29,7 @@ pub struct TransactionMetadata {
 }
 
 impl TransactionMetadata {
-    pub fn new(txn: &SignedTransaction) -> Self {
+    pub fn new(txn: &DiemSignedTransaction) -> Self {
         Self {
             sender: txn.sender(),
             authentication_key_preimage: txn

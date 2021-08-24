@@ -13,7 +13,7 @@ use crate::{
     },
 };
 use diem_config::config::{NodeConfig, PeerRole};
-use diem_types::{transaction::SignedTransaction, PeerId};
+use diem_types::{transaction::DiemSignedTransaction, PeerId};
 use netcore::transport::ConnectionOrigin;
 use network::{
     peer_manager::{PeerManagerNotification, PeerManagerRequest},
@@ -298,7 +298,7 @@ impl TestHarness {
         sender: &NodeId,
         is_primary: bool,
         num_messages: usize,
-    ) -> (Vec<SignedTransaction>, PeerId) {
+    ) -> (Vec<DiemSignedTransaction>, PeerId) {
         self.broadcast_txns(sender, is_primary, num_messages, true, true, false)
     }
 
@@ -311,7 +311,7 @@ impl TestHarness {
         check_txns_in_mempool: bool, // Check whether all txns in this broadcast are accepted into recipient's mempool
         execute_send: bool, // If true, actually delivers msg to remote peer; else, drop the message (useful for testing unreliable msg delivery)
         drop_ack: bool,     // If true, drop ack from remote peer to this peer
-    ) -> (Vec<SignedTransaction>, PeerId) {
+    ) -> (Vec<DiemSignedTransaction>, PeerId) {
         // Await broadcast notification
         // Note: If there are other messages you're looking for, this could throw them away
         // Wait for the number of messages to be broadcasted on this node

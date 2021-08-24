@@ -7,14 +7,14 @@ use crate::{
     execution_strategies::types::{Block, Executor, ExecutorResult, PartitionStrategy},
     executor::FakeExecutor,
 };
-use diem_types::{transaction::SignedTransaction, vm_status::VMStatus};
+use diem_types::{transaction::DiemSignedTransaction, vm_status::VMStatus};
 
 #[derive(Debug, Clone)]
 pub struct BasicStrategy;
 
 impl PartitionStrategy for BasicStrategy {
-    type Txn = SignedTransaction;
-    fn partition(&mut self, block: Block<Self::Txn>) -> Vec<Block<SignedTransaction>> {
+    type Txn = DiemSignedTransaction;
+    fn partition(&mut self, block: Block<Self::Txn>) -> Vec<Block<DiemSignedTransaction>> {
         vec![block]
     }
 }

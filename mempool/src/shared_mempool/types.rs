@@ -18,7 +18,7 @@ use diem_types::{
     account_address::AccountAddress,
     mempool_status::MempoolStatus,
     on_chain_config::{ConfigID, DiemVersion, OnChainConfig, OnChainConfigPayload, VMConfig},
-    transaction::SignedTransaction,
+    transaction::DiemSignedTransaction,
     vm_status::DiscardedVMStatus,
 };
 use futures::{
@@ -160,7 +160,7 @@ impl fmt::Display for ConsensusRequest {
 /// Response sent from mempool to consensus.
 pub enum ConsensusResponse {
     /// Block to submit to consensus
-    GetBlockResponse(Vec<SignedTransaction>),
+    GetBlockResponse(Vec<DiemSignedTransaction>),
     CommitResponse(),
 }
 
@@ -203,10 +203,12 @@ impl fmt::Display for TransactionExclusion {
 
 pub type SubmissionStatus = (MempoolStatus, Option<DiscardedVMStatus>);
 
-pub type SubmissionStatusBundle = (SignedTransaction, SubmissionStatus);
+pub type SubmissionStatusBundle = (DiemSignedTransaction, SubmissionStatus);
 
-pub type MempoolClientSender =
-    mpsc::Sender<(SignedTransaction, oneshot::Sender<Result<SubmissionStatus>>)>;
+pub type MempoolClientSender = mpsc::Sender<(
+    DiemSignedTransaction,
+    oneshot::Sender<Result<SubmissionStatus>>,
+)>;
 
 const MEMPOOL_SUBSCRIBED_CONFIGS: &[ConfigID] = &[DiemVersion::CONFIG_ID, VMConfig::CONFIG_ID];
 

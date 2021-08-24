@@ -33,8 +33,9 @@ use diem_types::{
     transaction::{
         authenticator::AuthenticationKey,
         helpers::{create_unsigned_txn, create_user_txn, TransactionSigner},
-        parse_transaction_argument, ChangeSet, Module, RawTransaction, Script, SignedTransaction,
-        TransactionArgument, TransactionPayload, Version, WriteSetPayload,
+        parse_transaction_argument, ChangeSet, DiemSignedTransaction, Module, RawTransaction,
+        Script, SignedTransaction, TransactionArgument, TransactionPayload, Version,
+        WriteSetPayload,
     },
     waypoint::Waypoint,
     write_set::{WriteOp, WriteSetMut},
@@ -721,7 +722,11 @@ impl ClientProxy {
     }
 
     /// Submit transaction and waits for the transaction executed
-    pub fn submit_and_wait(&mut self, txn: &SignedTransaction, is_blocking: bool) -> Result<()> {
+    pub fn submit_and_wait(
+        &mut self,
+        txn: &DiemSignedTransaction,
+        is_blocking: bool,
+    ) -> Result<()> {
         self.client.submit_transaction(txn)?;
         if is_blocking {
             self.wait_for_signed_transaction(txn)?;
@@ -738,7 +743,7 @@ impl ClientProxy {
     /// Waits for the transaction
     pub fn wait_for_signed_transaction(
         &mut self,
-        txn: &SignedTransaction,
+        txn: &DiemSignedTransaction,
     ) -> Result<views::TransactionView> {
         let (tx, rx) = std::sync::mpsc::channel();
         if !self.quiet_wait {
@@ -1541,7 +1546,7 @@ impl ClientProxy {
             ));
         }
         let bytes = hex::decode(body)?;
-        let txns: Vec<SignedTransaction> = bcs::from_bytes(&bytes).unwrap();
+        let txns: Vec<DiemSignedTransaction> = bcs::from_bytes(&bytes).unwrap();
         for txn in &txns {
             self.wait_for_signed_transaction(txn).map_err(|e| {
                 info!("minting transaction error: {}", e);
@@ -1633,7 +1638,7 @@ impl ClientProxy {
         max_gas_amount: Option<u64>,
         gas_unit_price: Option<u64>,
         gas_currency_code: Option<String>,
-    ) -> Result<SignedTransaction> {
+    ) -> Result<DiemSignedTransaction> {
         let signer: Box<&dyn TransactionSigner> = match &sender_account.key_pair {
             Some(key_pair) => Box::new(key_pair),
             None => Box::new(&self.wallet),

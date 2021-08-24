@@ -6,12 +6,12 @@ use crate::{
     execution_strategies::types::{Block, Executor, ExecutorResult, PartitionStrategy},
     executor::FakeExecutor,
 };
-use diem_types::{transaction::SignedTransaction, vm_status::VMStatus};
+use diem_types::{transaction::DiemSignedTransaction, vm_status::VMStatus};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum AnnotatedTransaction {
     Block,
-    Txn(Box<SignedTransaction>),
+    Txn(Box<DiemSignedTransaction>),
 }
 
 #[derive(Debug, Clone)]
@@ -19,7 +19,7 @@ pub struct PartitionedGuidedStrategy;
 
 impl PartitionStrategy for PartitionedGuidedStrategy {
     type Txn = AnnotatedTransaction;
-    fn partition(&mut self, block: Block<Self::Txn>) -> Vec<Block<SignedTransaction>> {
+    fn partition(&mut self, block: Block<Self::Txn>) -> Vec<Block<DiemSignedTransaction>> {
         block
             .split(|atxn| atxn == &AnnotatedTransaction::Block)
             .map(move |block| {
@@ -40,7 +40,7 @@ pub struct UnPartitionedGuidedStrategy;
 
 impl PartitionStrategy for UnPartitionedGuidedStrategy {
     type Txn = AnnotatedTransaction;
-    fn partition(&mut self, block: Block<Self::Txn>) -> Vec<Block<SignedTransaction>> {
+    fn partition(&mut self, block: Block<Self::Txn>) -> Vec<Block<DiemSignedTransaction>> {
         vec![block
             .into_iter()
             .filter_map(|atxn| match atxn {

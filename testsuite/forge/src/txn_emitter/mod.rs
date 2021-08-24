@@ -11,7 +11,9 @@ use diem_sdk::{
     transaction_builder::{Currency, TransactionFactory},
     types::{
         account_config::XUS_NAME,
-        transaction::{authenticator::AuthenticationKey, SignedTransaction, Transaction},
+        transaction::{
+            authenticator::AuthenticationKey, DiemSignedTransaction, SignedTransaction, Transaction,
+        },
         LocalAccount,
     },
 };
@@ -192,7 +194,7 @@ impl SubmissionWorker {
         self.accounts
     }
 
-    fn gen_requests(&mut self) -> Vec<SignedTransaction> {
+    fn gen_requests(&mut self) -> Vec<DiemSignedTransaction> {
         let batch_size = max(MAX_TXN_BATCH_SIZE, self.accounts.len());
         let accounts = self
             .accounts
@@ -493,7 +495,7 @@ async fn retrieve_account_balance(
 pub async fn execute_and_wait_transactions(
     client: &JsonRpcClient,
     account: &mut LocalAccount,
-    txn: Vec<SignedTransaction>,
+    txn: Vec<DiemSignedTransaction>,
 ) -> Result<()> {
     debug!(
         "[{:?}] Submitting transactions {} - {} for {}",
@@ -532,7 +534,7 @@ pub async fn execute_and_wait_transactions(
 
 async fn wait_for_signed_transactions(
     client: &JsonRpcClient,
-    txns: &[SignedTransaction],
+    txns: &[DiemSignedTransaction],
 ) -> Result<()> {
     let deadline = Instant::now()
         + txns
@@ -551,20 +553,21 @@ async fn wait_for_signed_transactions(
             return Ok(());
         }
 
-        let (batch, queried_txns): (Vec<MethodRequest>, Vec<&SignedTransaction>) = uncommitted_txns
-            .iter()
-            .take(20)
-            .map(|txn| {
-                (
-                    MethodRequest::get_account_transaction(
-                        txn.sender(),
-                        txn.sequence_number(),
-                        false,
-                    ),
-                    txn,
-                )
-            })
-            .unzip();
+        let (batch, queried_txns): (Vec<MethodRequest>, Vec<&DiemSignedTransaction>) =
+            uncommitted_txns
+                .iter()
+                .take(20)
+                .map(|txn| {
+                    (
+                        MethodRequest::get_account_transaction(
+                            txn.sender(),
+                            txn.sequence_number(),
+                            false,
+                        ),
+                        txn,
+                    )
+                })
+                .unzip();
         let responses = client
             .batch(batch)
             .await
@@ -747,7 +750,7 @@ pub fn create_parent_vasp_request(
     creation_account: &mut LocalAccount,
     account_auth_key: AuthenticationKey,
     txn_factory: &TransactionFactory,
-) -> SignedTransaction {
+) -> DiemSignedTransaction {
     creation_account.sign_with_transaction_builder(txn_factory.create_parent_vasp_account(
         Currency::XUS,
         0,
@@ -771,7 +774,7 @@ pub fn gen_transfer_txn_request(
     receiver: &AccountAddress,
     num_coins: u64,
     txn_factory: &TransactionFactory,
-) -> SignedTransaction {
+) -> DiemSignedTransaction {
     sender.sign_with_transaction_builder(txn_factory.peer_to_peer(
         Currency::XUS,
         *receiver,

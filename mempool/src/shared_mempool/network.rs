@@ -6,7 +6,7 @@
 use crate::counters;
 use channel::message_queues::QueueStyle;
 use diem_metrics::IntCounterVec;
-use diem_types::{transaction::SignedTransaction, PeerId};
+use diem_types::{transaction::DiemSignedTransaction, PeerId};
 use fail::fail_point;
 use network::{
     error::NetworkError,
@@ -23,7 +23,7 @@ pub enum MempoolSyncMsg {
     BroadcastTransactionsRequest {
         /// Unique id of sync request. Can be used by sender for rebroadcast analysis
         request_id: Vec<u8>,
-        transactions: Vec<SignedTransaction>,
+        transactions: Vec<DiemSignedTransaction>,
     },
     /// Broadcast ack issued by the receiver.
     BroadcastTransactionsResponse {

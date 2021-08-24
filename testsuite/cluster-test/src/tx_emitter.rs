@@ -36,7 +36,7 @@ use diem_client::{views::AmountView, Client as JsonRpcClient, MethodRequest};
 use diem_sdk::types::{AccountKey, LocalAccount};
 use diem_types::{
     account_config::{diem_root_address, treasury_compliance_account_address},
-    transaction::SignedTransaction,
+    transaction::DiemSignedTransaction,
 };
 use futures::future::{try_join_all, FutureExt};
 use once_cell::sync::Lazy;
@@ -640,8 +640,8 @@ fn invalid_tx(
     receiver: &AccountAddress,
     chain_id: ChainId,
     gas_price: u64,
-    reqs: &[SignedTransaction],
-) -> SignedTransaction {
+    reqs: &[DiemSignedTransaction],
+) -> DiemSignedTransaction {
     let seed: [u8; 32] = OsRng.gen();
     let mut rng = StdRng::from_seed(seed);
     let mut invalid_account = LocalAccount::generate(&mut rng);
@@ -749,7 +749,7 @@ impl SubmissionWorker {
         self.accounts
     }
 
-    fn gen_requests(&mut self, gas_price: u64) -> Vec<SignedTransaction> {
+    fn gen_requests(&mut self, gas_price: u64) -> Vec<DiemSignedTransaction> {
         let mut rng = ThreadRng::default();
         let batch_size = max(MAX_TXN_BATCH_SIZE, self.accounts.len());
         let accounts = self
@@ -884,7 +884,7 @@ fn gen_mint_request(
     faucet_account: &mut LocalAccount,
     num_coins: u64,
     tx_factory: &TransactionFactory,
-) -> SignedTransaction {
+) -> DiemSignedTransaction {
     let receiver = faucet_account.address();
     faucet_account.sign_with_transaction_builder(tx_factory.peer_to_peer(
         Currency::XUS,
@@ -898,7 +898,7 @@ pub fn gen_transfer_txn_request(
     receiver: &AccountAddress,
     num_coins: u64,
     mut tx_factory: TransactionFactory,
-) -> SignedTransaction {
+) -> DiemSignedTransaction {
     if *SCRIPT_FN {
         tx_factory = tx_factory.with_diem_version(2);
     }
@@ -914,7 +914,7 @@ fn gen_create_child_txn_request(
     receiver_auth_key: AuthenticationKey,
     num_coins: u64,
     chain_id: ChainId,
-) -> SignedTransaction {
+) -> DiemSignedTransaction {
     sender.sign_with_transaction_builder(
         TransactionFactory::new(chain_id).create_child_vasp_account(
             Currency::XUS,
@@ -929,7 +929,7 @@ fn gen_create_account_txn_request(
     creation_account: &mut LocalAccount,
     account: &LocalAccount,
     chain_id: ChainId,
-) -> SignedTransaction {
+) -> DiemSignedTransaction {
     creation_account.sign_with_transaction_builder(
         TransactionFactory::new(chain_id).create_parent_vasp_account(
             Currency::XUS,
@@ -946,7 +946,7 @@ fn gen_mint_txn_request(
     receiver: &AccountAddress,
     num_coins: u64,
     chain_id: ChainId,
-) -> SignedTransaction {
+) -> DiemSignedTransaction {
     sender.sign_with_transaction_builder(TransactionFactory::new(chain_id).peer_to_peer(
         Currency::XUS,
         *receiver,
@@ -1005,7 +1005,7 @@ fn gen_create_child_txn_requests(
     accounts: &[LocalAccount],
     amount: u64,
     chain_id: ChainId,
-) -> Vec<SignedTransaction> {
+) -> Vec<DiemSignedTransaction> {
     accounts
         .iter()
         .map(|account| {
@@ -1023,7 +1023,7 @@ fn gen_account_creation_txn_requests(
     creation_account: &mut LocalAccount,
     accounts: &[LocalAccount],
     chain_id: ChainId,
-) -> Vec<SignedTransaction> {
+) -> Vec<DiemSignedTransaction> {
     accounts
         .iter()
         .map(|account| gen_create_account_txn_request(creation_account, account, chain_id))
@@ -1035,7 +1035,7 @@ fn gen_mint_txn_requests(
     accounts: &[LocalAccount],
     amount: u64,
     chain_id: ChainId,
-) -> Vec<SignedTransaction> {
+) -> Vec<DiemSignedTransaction> {
     accounts
         .iter()
         .map(|account| gen_mint_txn_request(sending_account, &account.address(), amount, chain_id))
@@ -1045,7 +1045,7 @@ fn gen_mint_txn_requests(
 pub async fn execute_and_wait_transactions(
     client: &mut JsonRpcClient,
     account: &mut LocalAccount,
-    txn: Vec<SignedTransaction>,
+    txn: Vec<DiemSignedTransaction>,
 ) -> Result<()> {
     debug!(
         "[{:?}] Submitting transactions {} - {} for {}",

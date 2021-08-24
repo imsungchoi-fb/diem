@@ -8,7 +8,7 @@ use diem_temppath::TempPath;
 use diem_types::{
     block_metadata::BlockMetadata,
     proptest_types::{AccountInfoUniverse, SignatureCheckedTransactionGen},
-    transaction::{SignedTransaction, Transaction},
+    transaction::{DiemSignedTransaction, Transaction},
 };
 use proptest::{collection::vec, prelude::*};
 use std::collections::BTreeMap;
@@ -109,7 +109,7 @@ proptest! {
         txns in vec(
             prop_oneof![
                 any::<BlockMetadata>().prop_map(Transaction::BlockMetadata),
-                any::<SignedTransaction>().prop_map(Transaction::UserTransaction),
+                any::<DiemSignedTransaction>().prop_map(Transaction::UserTransaction),
             ],
             1..100,
         )

@@ -11,7 +11,7 @@ use crate::{
 use diem_crypto::{ed25519::Ed25519PrivateKey, PrivateKey, Uniform};
 use diem_types::{
     account_config,
-    transaction::{authenticator::AuthenticationKey, SignedTransaction},
+    transaction::{authenticator::AuthenticationKey, DiemSignedTransaction},
 };
 use once_cell::sync::Lazy;
 
@@ -308,7 +308,7 @@ pub static ROTATE_KEY: Lazy<u64> = Lazy::new(|| {
     compute_gas_used(txn, &mut executor)
 });
 
-fn compute_gas_used(txn: SignedTransaction, executor: &mut FakeExecutor) -> u64 {
+fn compute_gas_used(txn: DiemSignedTransaction, executor: &mut FakeExecutor) -> u64 {
     let output = &executor.execute_transaction(txn);
     output.gas_used()
 }

@@ -10,7 +10,7 @@ use diem_sdk::{
         account_address::AccountAddress,
         account_config::{testnet_dd_account_address, treasury_compliance_account_address},
         chain_id::ChainId,
-        transaction::{authenticator::AuthenticationKey, metadata, SignedTransaction},
+        transaction::{authenticator::AuthenticationKey, metadata, DiemSignedTransaction},
         LocalAccount,
     },
 };
@@ -20,7 +20,7 @@ use std::{fmt, sync::Mutex};
 #[derive(Debug)]
 pub enum Response {
     DDAccountNextSeqNum(u64),
-    SubmittedTxns(Vec<SignedTransaction>),
+    SubmittedTxns(Vec<DiemSignedTransaction>),
 }
 
 impl std::fmt::Display for Response {

@@ -24,7 +24,7 @@ use diem_types::{
     ledger_info::LedgerInfoWithSignatures,
     proof::AccumulatorExtensionProof,
     proptest_types::{AccountInfoUniverse, BlockInfoGen},
-    transaction::SignedTransaction,
+    transaction::DiemSignedTransaction,
     validator_verifier::{ValidatorConsensusInfo, ValidatorVerifier},
 };
 use proptest::prelude::*;
@@ -93,7 +93,7 @@ prop_compose! {
     pub fn arb_block_type_proposal(
     )(
         author in any::<AccountAddress>(),
-        payload in prop::collection::vec(any::<SignedTransaction>(), 0..MAX_PROPOSAL_TRANSACTIONS),
+        payload in prop::collection::vec(any::<DiemSignedTransaction>(), 0..MAX_PROPOSAL_TRANSACTIONS),
     ) -> BlockType {
         BlockType::Proposal{
             payload,

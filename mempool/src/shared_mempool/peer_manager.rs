@@ -13,7 +13,7 @@ use crate::{
 use diem_config::config::{MempoolConfig, PeerNetworkId, PeerRole, RoleType};
 use diem_infallible::Mutex;
 use diem_logger::prelude::*;
-use diem_types::transaction::SignedTransaction;
+use diem_types::transaction::DiemSignedTransaction;
 use itertools::Itertools;
 use netcore::transport::ConnectionOrigin;
 use network::transport::ConnectionMetadata;
@@ -213,7 +213,7 @@ impl PeerManager {
         }
 
         let batch_id: BatchId;
-        let transactions: Vec<SignedTransaction>;
+        let transactions: Vec<DiemSignedTransaction>;
         let mut metric_label = None;
         {
             let mut mempool = smp.mempool.lock();

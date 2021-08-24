@@ -15,7 +15,7 @@ use anyhow::Result;
 use channel::diem_channel;
 use diem_config::{config::NodeConfig, network_id::NodeNetworkId};
 use diem_infallible::{Mutex, RwLock};
-use diem_types::{on_chain_config::OnChainConfigPayload, transaction::SignedTransaction};
+use diem_types::{on_chain_config::OnChainConfigPayload, transaction::DiemSignedTransaction};
 use futures::channel::{
     mpsc::{self, Receiver, UnboundedSender},
     oneshot,
@@ -38,7 +38,10 @@ pub(crate) fn start_shared_mempool<V>(
     // First element in tuple is the network ID.
     // See `NodeConfig::is_upstream_peer` for the definition of network ID.
     mempool_network_handles: Vec<(NodeNetworkId, MempoolNetworkSender, MempoolNetworkEvents)>,
-    client_events: mpsc::Receiver<(SignedTransaction, oneshot::Sender<Result<SubmissionStatus>>)>,
+    client_events: mpsc::Receiver<(
+        DiemSignedTransaction,
+        oneshot::Sender<Result<SubmissionStatus>>,
+    )>,
     consensus_requests: mpsc::Receiver<ConsensusRequest>,
     mempool_listener: MempoolNotificationListener,
     mempool_reconfig_events: diem_channel::Receiver<(), OnChainConfigPayload>,
@@ -94,7 +97,10 @@ pub fn bootstrap(
     // The first element in the tuple is the ID of the network that this network is a handle to.
     // See `NodeConfig::is_upstream_peer` for the definition of network ID.
     mempool_network_handles: Vec<(NodeNetworkId, MempoolNetworkSender, MempoolNetworkEvents)>,
-    client_events: Receiver<(SignedTransaction, oneshot::Sender<Result<SubmissionStatus>>)>,
+    client_events: Receiver<(
+        DiemSignedTransaction,
+        oneshot::Sender<Result<SubmissionStatus>>,
+    )>,
     consensus_requests: Receiver<ConsensusRequest>,
     mempool_listener: MempoolNotificationListener,
     mempool_reconfig_events: diem_channel::Receiver<(), OnChainConfigPayload>,

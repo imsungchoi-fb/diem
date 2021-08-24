@@ -25,7 +25,7 @@ use diem_json_rpc_types::request::{
 use diem_mempool::{MempoolClientSender, SubmissionStatus};
 use diem_types::{
     chain_id::ChainId, ledger_info::LedgerInfoWithSignatures, mempool_status::MempoolStatusCode,
-    transaction::SignedTransaction,
+    transaction::DiemSignedTransaction,
 };
 use fail::fail_point;
 use futures::{channel::oneshot, SinkExt};
@@ -65,7 +65,7 @@ impl JsonRpcService {
 
     pub async fn mempool_request(
         &self,
-        transaction: SignedTransaction,
+        transaction: DiemSignedTransaction,
     ) -> Result<SubmissionStatus> {
         let (req_sender, callback) = oneshot::channel();
 

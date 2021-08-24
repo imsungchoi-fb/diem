@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #![forbid(unsafe_code)]
-use diem_types::transaction::{SignedTransaction, TransactionOutput};
+use diem_types::transaction::{DiemSignedTransaction, TransactionOutput};
 
 pub type Block<Txn> = Vec<Txn>;
 pub type ExecutorResult<T> = Result<Vec<TransactionOutput>, T>;
@@ -15,5 +15,5 @@ pub trait Executor {
 
 pub trait PartitionStrategy {
     type Txn;
-    fn partition(&mut self, block: Block<Self::Txn>) -> Vec<Block<SignedTransaction>>;
+    fn partition(&mut self, block: Block<Self::Txn>) -> Vec<Block<DiemSignedTransaction>>;
 }

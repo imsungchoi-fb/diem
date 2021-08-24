@@ -4,7 +4,7 @@
 use crate::{methods, runtime, tests};
 use diem_config::config;
 use diem_proptest_helpers::ValueGenerator;
-use diem_types::account_state_blob::AccountStateWithProof;
+use diem_types::{account_state_blob::AccountStateWithProof, transaction::DiemSignedTransaction};
 use futures::{channel::mpsc::channel, StreamExt};
 use std::sync::Arc;
 use warp::reply::Reply;
@@ -74,9 +74,7 @@ pub fn method_fuzzer(params_data: &[u8], method: &str) {
 /// generate_corpus produces an arbitrary transaction to submit to JSON RPC service
 pub fn generate_corpus(gen: &mut ValueGenerator) -> Vec<u8> {
     // use proptest to generate a SignedTransaction
-    let txn = gen.generate(proptest::arbitrary::any::<
-        diem_types::transaction::SignedTransaction,
-    >());
+    let txn = gen.generate(proptest::arbitrary::any::<DiemSignedTransaction>());
     let payload = hex::encode(bcs::to_bytes(&txn).unwrap());
     let request =
         serde_json::json!({"jsonrpc": "2.0", "method": "submit", "params": [payload], "id": 1});

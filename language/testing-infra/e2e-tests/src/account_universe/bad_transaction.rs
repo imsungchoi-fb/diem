@@ -13,7 +13,7 @@ use diem_crypto::{
 use diem_proptest_helpers::Index;
 use diem_types::{
     account_config::XUS_NAME,
-    transaction::{Script, SignedTransaction, TransactionStatus},
+    transaction::{DiemSignedTransaction, Script, TransactionStatus},
     vm_status::StatusCode,
 };
 use move_core_types::gas_schedule::{AbstractMemorySize, GasAlgebra, GasCarrier, GasConstants};
@@ -36,7 +36,7 @@ impl AUTransactionGen for SequenceNumberMismatchGen {
     fn apply(
         &self,
         universe: &mut AccountUniverse,
-    ) -> (SignedTransaction, (TransactionStatus, u64)) {
+    ) -> (DiemSignedTransaction, (TransactionStatus, u64)) {
         let sender = universe.pick(self.sender).1;
 
         let seq = if sender.sequence_number == self.seq {
@@ -81,7 +81,7 @@ impl AUTransactionGen for InsufficientBalanceGen {
     fn apply(
         &self,
         universe: &mut AccountUniverse,
-    ) -> (SignedTransaction, (TransactionStatus, u64)) {
+    ) -> (DiemSignedTransaction, (TransactionStatus, u64)) {
         let sender = universe.pick(self.sender).1;
 
         let max_gas_unit = (sender.balance / self.gas_unit_price) + 1;
@@ -144,7 +144,7 @@ impl AUTransactionGen for InvalidAuthkeyGen {
     fn apply(
         &self,
         universe: &mut AccountUniverse,
-    ) -> (SignedTransaction, (TransactionStatus, u64)) {
+    ) -> (DiemSignedTransaction, (TransactionStatus, u64)) {
         let sender = universe.pick(self.sender).1;
 
         let txn = sender

@@ -10,7 +10,7 @@ use diem_transaction_builder::stdlib::encode_peer_to_peer_by_signers_script_func
 use diem_types::{
     account_config,
     transaction::{
-        RawTransaction, Script, SignedTransaction, TransactionArgument, TransactionPayload,
+        DiemSignedTransaction, RawTransaction, Script, TransactionArgument, TransactionPayload,
     },
 };
 use move_core_types::language_storage::TypeTag;
@@ -162,7 +162,7 @@ pub fn empty_txn(
     max_gas_amount: u64,
     gas_unit_price: u64,
     gas_currency_code: String,
-) -> SignedTransaction {
+) -> DiemSignedTransaction {
     sender
         .transaction()
         .script(Script::new(EMPTY_SCRIPT.to_vec(), vec![], vec![]))
@@ -180,7 +180,7 @@ pub fn create_account_txn(
     seq_num: u64,
     initial_amount: u64,
     type_tag: TypeTag,
-) -> SignedTransaction {
+) -> DiemSignedTransaction {
     let args: Vec<TransactionArgument> = vec![
         TransactionArgument::Address(*new_account.address()),
         TransactionArgument::U8Vector(new_account.auth_key_prefix()),
@@ -205,7 +205,7 @@ pub fn peer_to_peer_txn(
     receiver: &Account,
     seq_num: u64,
     transfer_amount: u64,
-) -> SignedTransaction {
+) -> DiemSignedTransaction {
     let args: Vec<TransactionArgument> = vec![
         TransactionArgument::Address(*receiver.address()),
         TransactionArgument::U64(transfer_amount),
@@ -228,7 +228,11 @@ pub fn peer_to_peer_txn(
 }
 
 /// Returns a transaction to change the keys for the given account.
-pub fn rotate_key_txn(sender: &Account, new_key_hash: Vec<u8>, seq_num: u64) -> SignedTransaction {
+pub fn rotate_key_txn(
+    sender: &Account,
+    new_key_hash: Vec<u8>,
+    seq_num: u64,
+) -> DiemSignedTransaction {
     let args = vec![TransactionArgument::U8Vector(new_key_hash)];
     sender
         .transaction()
@@ -266,7 +270,7 @@ pub fn multi_agent_swap_txn(
     seq_num: u64,
     xus_amount: u64,
     xdx_amount: u64,
-) -> SignedTransaction {
+) -> DiemSignedTransaction {
     let args: Vec<TransactionArgument> = vec![
         TransactionArgument::U64(xus_amount),
         TransactionArgument::U64(xdx_amount),
@@ -287,7 +291,7 @@ pub fn multi_agent_p2p_txn(
     payee: &Account,
     seq_num: u64,
     amount: u64,
-) -> SignedTransaction {
+) -> DiemSignedTransaction {
     // get a SignedTransaction
     payer
         .transaction()
@@ -309,7 +313,7 @@ pub fn multi_agent_mint_txn(
     seq_num: u64,
     amount: u64,
     tier_index: u64,
-) -> SignedTransaction {
+) -> DiemSignedTransaction {
     let args: Vec<TransactionArgument> = vec![
         TransactionArgument::U64(amount),
         TransactionArgument::U64(tier_index),

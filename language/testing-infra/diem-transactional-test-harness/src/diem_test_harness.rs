@@ -14,8 +14,8 @@ use diem_types::{
     },
     chain_id::ChainId,
     transaction::{
-        Module as TransactionModule, RawTransaction, Script as TransactionScript,
-        ScriptFunction as TransactionScriptFunction, SignedTransaction, Transaction,
+        DiemSignedTransaction, Module as TransactionModule, RawTransaction,
+        Script as TransactionScript, ScriptFunction as TransactionScriptFunction, Transaction,
         TransactionStatus,
     },
     vm_status::KeptVMStatus,
@@ -169,7 +169,7 @@ impl<'a> DiemTestAdapter<'a> {
     ///
     /// Should error if the transaction ends up being discarded, or having a status other than
     /// EXECUTED.
-    fn run_transaction(&mut self, txn: SignedTransaction) -> Result<()> {
+    fn run_transaction(&mut self, txn: DiemSignedTransaction) -> Result<()> {
         let mut outputs = DiemVM::execute_block_and_keep_vm_status(
             vec![Transaction::UserTransaction(txn)],
             &self.storage,

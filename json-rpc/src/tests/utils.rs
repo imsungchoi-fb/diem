@@ -29,7 +29,7 @@ use diem_types::{
     },
     state_proof::StateProof,
     transaction::{
-        AccountTransactionsWithProof, SignedTransaction, Transaction, TransactionInfo,
+        AccountTransactionsWithProof, DiemSignedTransaction, Transaction, TransactionInfo,
         TransactionListWithProof, TransactionWithProof, Version,
     },
     vm_status::KeptVMStatus,
@@ -518,7 +518,7 @@ pub fn create_db_and_runtime() -> (
     Runtime,
     String,
     Receiver<(
-        SignedTransaction,
+        DiemSignedTransaction,
         oneshot::Sender<anyhow::Result<SubmissionStatus>>,
     )>,
 ) {

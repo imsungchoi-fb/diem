@@ -16,7 +16,7 @@ use diem_config::{
 use diem_infallible::{Mutex, RwLock};
 use diem_types::{
     mempool_status::MempoolStatusCode,
-    transaction::{GovernanceRole, SignedTransaction},
+    transaction::{DiemSignedTransaction, GovernanceRole},
 };
 use futures::channel::{mpsc, oneshot};
 use mempool_notifications::{MempoolNotificationListener, MempoolNotifier};
@@ -32,7 +32,10 @@ use vm_validator::mocks::mock_vm_validator::MockVMValidator;
 /// Mock of a running instance of shared mempool.
 pub struct MockSharedMempool {
     _runtime: Runtime,
-    pub ac_client: mpsc::Sender<(SignedTransaction, oneshot::Sender<Result<SubmissionStatus>>)>,
+    pub ac_client: mpsc::Sender<(
+        DiemSignedTransaction,
+        oneshot::Sender<Result<SubmissionStatus>>,
+    )>,
     pub mempool: Arc<Mutex<CoreMempool>>,
     pub consensus_sender: mpsc::Sender<ConsensusRequest>,
     pub mempool_notifier: Option<MempoolNotifier>,
@@ -102,7 +105,7 @@ impl MockSharedMempool {
         }
     }
 
-    pub fn add_txns(&self, txns: Vec<SignedTransaction>) -> Result<()> {
+    pub fn add_txns(&self, txns: Vec<DiemSignedTransaction>) -> Result<()> {
         {
             let mut pool = self.mempool.lock();
             for txn in txns {
@@ -126,7 +129,7 @@ impl MockSharedMempool {
     }
 
     /// True if all the given txns are in mempool, else false.
-    pub fn read_timeline(&self, timeline_id: u64, count: usize) -> Vec<SignedTransaction> {
+    pub fn read_timeline(&self, timeline_id: u64, count: usize) -> Vec<DiemSignedTransaction> {
         let mut pool = self.mempool.lock();
         pool.read_timeline(timeline_id, count)
             .0

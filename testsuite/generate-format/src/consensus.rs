@@ -59,7 +59,7 @@ pub fn get_registry() -> Result<Registry> {
     tracer.trace_type::<transaction::TransactionPayload>(&samples)?;
     tracer.trace_type::<transaction::WriteSetPayload>(&samples)?;
     tracer.trace_type::<transaction::authenticator::AccountAuthenticator>(&samples)?;
-    tracer.trace_type::<transaction::authenticator::TransactionAuthenticator>(&samples)?;
+    tracer.trace_type::<transaction::authenticator::DiemTransactionAuthenticator>(&samples)?;
     tracer.trace_type::<write_set::WriteOp>(&samples)?;
 
     tracer.trace_type::<consensus::network_interface::ConsensusMsg>(&samples)?;

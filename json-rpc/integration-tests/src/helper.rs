@@ -10,7 +10,7 @@ use diem_sdk::{
         account_address::AccountAddress,
         account_config::XUS_NAME,
         chain_id::ChainId,
-        transaction::{SignedTransaction, Transaction},
+        transaction::{DiemSignedTransaction, Transaction},
         LocalAccount,
     },
 };
@@ -109,17 +109,17 @@ impl JsonRpcTestHelper {
         resp.json().unwrap()
     }
 
-    pub fn submit_and_wait(&self, txn: &SignedTransaction) -> Value {
+    pub fn submit_and_wait(&self, txn: &DiemSignedTransaction) -> Value {
         self.submit(txn);
         self.wait_for_txn(txn)
     }
 
-    pub fn submit(&self, txn: &SignedTransaction) -> JsonRpcResponse {
+    pub fn submit(&self, txn: &DiemSignedTransaction) -> JsonRpcResponse {
         let txn_hex = hex::encode(bcs::to_bytes(txn).expect("bcs txn failed"));
         self.send("submit", json!([txn_hex]))
     }
 
-    pub fn wait_for_txn(&self, txn: &SignedTransaction) -> Value {
+    pub fn wait_for_txn(&self, txn: &DiemSignedTransaction) -> Value {
         let txn_hash = Transaction::UserTransaction(txn.clone()).hash().to_hex();
         for _i in 0..60 {
             let resp = self.get_account_transaction(&txn.sender(), txn.sequence_number(), true);
@@ -188,7 +188,7 @@ impl JsonRpcTestHelper {
         sender: &mut LocalAccount,
         secondary_signers: &[&mut LocalAccount],
         payload: diem_sdk::types::transaction::TransactionPayload,
-    ) -> SignedTransaction {
+    ) -> DiemSignedTransaction {
         let seq_onchain = self
             .get_account_sequence(sender.address())
             .expect("account should exist onchain for create transaction");

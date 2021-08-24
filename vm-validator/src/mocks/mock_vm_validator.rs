@@ -7,7 +7,7 @@ use diem_state_view::StateView;
 use diem_types::{
     account_address::AccountAddress,
     on_chain_config::OnChainConfigPayload,
-    transaction::{GovernanceRole, SignedTransaction, VMValidatorResult},
+    transaction::{DiemSignedTransaction, GovernanceRole, VMValidatorResult},
     vm_status::StatusCode,
 };
 use diem_vm::VMValidator;
@@ -18,7 +18,7 @@ pub struct MockVMValidator;
 impl VMValidator for MockVMValidator {
     fn validate_transaction(
         &self,
-        _transaction: SignedTransaction,
+        _transaction: DiemSignedTransaction,
         _state_view: &dyn StateView,
     ) -> VMValidatorResult {
         VMValidatorResult::new(None, 0, GovernanceRole::NonGovernanceRole)
@@ -27,7 +27,7 @@ impl VMValidator for MockVMValidator {
 
 impl TransactionValidation for MockVMValidator {
     type ValidationInstance = MockVMValidator;
-    fn validate_transaction(&self, txn: SignedTransaction) -> Result<VMValidatorResult> {
+    fn validate_transaction(&self, txn: DiemSignedTransaction) -> Result<VMValidatorResult> {
         let txn = match txn.check_signature() {
             Ok(txn) => txn,
             Err(_) => {

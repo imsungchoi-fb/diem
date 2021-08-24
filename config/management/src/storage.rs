@@ -10,7 +10,7 @@ use diem_network_address_encryption::Encryptor;
 use diem_secure_storage::{CryptoStorage, KVStorage, Storage};
 use diem_types::{
     account_address::AccountAddress,
-    transaction::{RawTransaction, SignedTransaction, Transaction},
+    transaction::{DiemSignedTransaction, RawTransaction, SignedTransaction, Transaction},
     waypoint::Waypoint,
 };
 use serde::{de::DeserializeOwned, Serialize};
@@ -135,7 +135,7 @@ impl StorageWrapper {
         key_name: &'static str,
         script_name: &'static str,
         raw_transaction: RawTransaction,
-    ) -> Result<SignedTransaction, Error> {
+    ) -> Result<DiemSignedTransaction, Error> {
         let public_key = self.ed25519_public_from_private(key_name)?;
         let signature = self.storage.sign(key_name, &raw_transaction).map_err(|e| {
             Error::StorageSigningError(self.storage_name, script_name, key_name, e.to_string())
@@ -155,7 +155,7 @@ impl StorageWrapper {
         key_version: Ed25519PublicKey,
         script_name: &'static str,
         raw_transaction: RawTransaction,
-    ) -> Result<SignedTransaction, Error> {
+    ) -> Result<DiemSignedTransaction, Error> {
         let signature = self
             .storage
             .sign_using_version(key_name, key_version.clone(), &raw_transaction)

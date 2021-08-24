@@ -18,8 +18,8 @@ use crate::{
     on_chain_config::ValidatorSet,
     proof::TransactionListProof,
     transaction::{
-        ChangeSet, Module, RawTransaction, Script, SignatureCheckedTransaction, SignedTransaction,
-        Transaction, TransactionArgument, TransactionListWithProof, TransactionPayload,
+        ChangeSet, DiemSignatureCheckedTransaction, DiemSignedTransaction, Module, RawTransaction,
+        Script, Transaction, TransactionArgument, TransactionListWithProof, TransactionPayload,
         TransactionStatus, TransactionToCommit, Version, WriteSetPayload,
     },
     validator_info::ValidatorInfo,
@@ -383,7 +383,7 @@ impl Arbitrary for RawTransaction {
     type Strategy = BoxedStrategy<Self>;
 }
 
-impl SignatureCheckedTransaction {
+impl DiemSignatureCheckedTransaction {
     // This isn't an Arbitrary impl because this doesn't generate *any* possible SignedTransaction,
     // just one kind of them.
     pub fn script_strategy(
@@ -479,7 +479,7 @@ impl SignatureCheckedTransactionGen {
         self,
         sender_index: Index,
         universe: &mut AccountInfoUniverse,
-    ) -> SignatureCheckedTransaction {
+    ) -> DiemSignatureCheckedTransaction {
         let raw_txn = self.raw_transaction_gen.materialize(sender_index, universe);
         let account_info = universe.get_account_info(sender_index);
         raw_txn
@@ -488,7 +488,7 @@ impl SignatureCheckedTransactionGen {
     }
 }
 
-impl Arbitrary for SignatureCheckedTransaction {
+impl Arbitrary for DiemSignatureCheckedTransaction {
     type Parameters = ();
     fn arbitrary_with(_args: ()) -> Self::Strategy {
         Self::strategy_impl(
@@ -503,10 +503,10 @@ impl Arbitrary for SignatureCheckedTransaction {
 }
 
 /// This `Arbitrary` impl only generates valid signed transactions. TODO: maybe add invalid ones?
-impl Arbitrary for SignedTransaction {
+impl Arbitrary for DiemSignedTransaction {
     type Parameters = ();
     fn arbitrary_with(_args: ()) -> Self::Strategy {
-        any::<SignatureCheckedTransaction>()
+        any::<DiemSignatureCheckedTransaction>()
             .prop_map(|txn| txn.into_inner())
             .boxed()
     }
@@ -887,7 +887,7 @@ fn arb_transaction_list_with_proof() -> impl Strategy<Value = TransactionListWit
     (
         vec(
             (
-                any::<SignedTransaction>(),
+                any::<DiemSignedTransaction>(),
                 vec(any::<ContractEvent>(), 0..10),
             ),
             0..10,

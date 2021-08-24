@@ -9,7 +9,7 @@ use crate::{
     },
 };
 use diem_config::config::NodeConfig;
-use diem_types::transaction::{GovernanceRole, SignedTransaction};
+use diem_types::transaction::{DiemSignedTransaction, GovernanceRole, SignedTransaction};
 use std::{
     collections::HashSet,
     time::{Duration, SystemTime},
@@ -289,7 +289,7 @@ fn test_timeline() {
             TestTransaction::new(1, 5, 1),
         ],
     );
-    let view = |txns: Vec<SignedTransaction>| -> Vec<u64> {
+    let view = |txns: Vec<DiemSignedTransaction>| -> Vec<u64> {
         txns.iter()
             .map(SignedTransaction::sequence_number)
             .collect()

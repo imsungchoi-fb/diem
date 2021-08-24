@@ -4,7 +4,7 @@
 use super::{Id, JsonRpcVersion, Method};
 use crate::{errors::JsonRpcError, views::BytesView};
 use diem_types::{
-    account_address::AccountAddress, event::EventKey, transaction::SignedTransaction,
+    account_address::AccountAddress, event::EventKey, transaction::DiemSignedTransaction,
 };
 use serde::{de, Deserialize, Serialize};
 use std::fmt;
@@ -162,11 +162,11 @@ impl MethodRequest {
 pub struct SubmitParams {
     #[serde(serialize_with = "serialize_signed_transaction")]
     #[serde(deserialize_with = "deserialize_signed_transaction")]
-    pub data: SignedTransaction,
+    pub data: DiemSignedTransaction,
 }
 
 fn serialize_signed_transaction<S>(
-    txn: &SignedTransaction,
+    txn: &DiemSignedTransaction,
     serializer: S,
 ) -> Result<S::Ok, S::Error>
 where
@@ -176,7 +176,9 @@ where
     BytesView::new(bcs::to_bytes(txn).map_err(S::Error::custom)?).serialize(serializer)
 }
 
-fn deserialize_signed_transaction<'de, D>(deserializer: D) -> Result<SignedTransaction, D::Error>
+fn deserialize_signed_transaction<'de, D>(
+    deserializer: D,
+) -> Result<DiemSignedTransaction, D::Error>
 where
     D: serde::Deserializer<'de>,
 {

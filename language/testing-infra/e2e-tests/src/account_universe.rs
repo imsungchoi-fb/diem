@@ -29,7 +29,7 @@ use crate::{
 };
 use diem_crypto::ed25519::{Ed25519PrivateKey, Ed25519PublicKey};
 use diem_types::{
-    transaction::{SignedTransaction, TransactionStatus},
+    transaction::{DiemSignedTransaction, TransactionStatus},
     vm_status::{known_locations, KeptVMStatus, StatusCode},
 };
 use once_cell::sync::Lazy;
@@ -94,7 +94,7 @@ pub trait AUTransactionGen: fmt::Debug {
     fn apply(
         &self,
         universe: &mut AccountUniverse,
-    ) -> (SignedTransaction, (TransactionStatus, u64));
+    ) -> (DiemSignedTransaction, (TransactionStatus, u64));
 
     /// Creates an arced version of this transaction, suitable for dynamic dispatch.
     fn arced(self) -> Arc<dyn AUTransactionGen>
@@ -109,7 +109,7 @@ impl AUTransactionGen for Arc<dyn AUTransactionGen> {
     fn apply(
         &self,
         universe: &mut AccountUniverse,
-    ) -> (SignedTransaction, (TransactionStatus, u64)) {
+    ) -> (DiemSignedTransaction, (TransactionStatus, u64)) {
         (**self).apply(universe)
     }
 }

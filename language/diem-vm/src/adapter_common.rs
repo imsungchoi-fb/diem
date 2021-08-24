@@ -8,7 +8,7 @@ use diem_types::{
     account_address::AccountAddress,
     account_config::{self, RoleId},
     transaction::{
-        GovernanceRole, SignatureCheckedTransaction, SignedTransaction, VMValidatorResult,
+        DiemSignatureCheckedTransaction, DiemSignedTransaction, GovernanceRole, VMValidatorResult,
     },
     vm_status::{StatusCode, VMStatus},
 };
@@ -39,10 +39,10 @@ pub trait VMAdapter {
 
     /// Checks the signature of the given signed transaction and returns
     /// `Ok(SignatureCheckedTransaction)` if the signature is valid.
-    fn check_signature(txn: SignedTransaction) -> Result<SignatureCheckedTransaction>;
+    fn check_signature(txn: DiemSignedTransaction) -> Result<DiemSignatureCheckedTransaction>;
 
     /// Check if the transaction format is supported.
-    fn check_transaction_format(&self, txn: &SignedTransaction) -> Result<(), VMStatus>;
+    fn check_transaction_format(&self, txn: &DiemSignedTransaction) -> Result<(), VMStatus>;
 
     /// Get the gas price for the given transaction.
     /// TODO: remove this after making mempool interface more generic so
@@ -50,7 +50,7 @@ pub trait VMAdapter {
     /// instead of using governance roles and gas prices.
     fn get_gas_price<S: MoveResolver>(
         &self,
-        txn: &SignedTransaction,
+        txn: &DiemSignedTransaction,
         remote_cache: &S,
     ) -> Result<u64, VMStatus>;
 
@@ -58,7 +58,7 @@ pub trait VMAdapter {
     fn run_prologue<S: MoveResolver>(
         &self,
         session: &mut Session<S>,
-        transaction: &SignatureCheckedTransaction,
+        transaction: &DiemSignatureCheckedTransaction,
         log_context: &AdapterLogSchema,
     ) -> Result<(), VMStatus>;
 
@@ -82,7 +82,7 @@ pub trait VMAdapter {
 /// and `Some(DiscardedVMStatus)` otherwise.
 pub fn validate_signed_transaction<A: VMAdapter>(
     adapter: &A,
-    transaction: SignedTransaction,
+    transaction: DiemSignedTransaction,
     state_view: &dyn StateView,
 ) -> VMValidatorResult {
     let _timer = TXN_VALIDATION_SECONDS.start_timer();
@@ -139,7 +139,7 @@ fn get_account_role(sender: AccountAddress, remote_cache: &StateViewCache) -> Go
 pub(crate) fn validate_signature_checked_transaction<S: MoveResolver, A: VMAdapter>(
     adapter: &A,
     mut session: &mut Session<S>,
-    transaction: &SignatureCheckedTransaction,
+    transaction: &DiemSignatureCheckedTransaction,
     allow_too_new: bool,
     log_context: &AdapterLogSchema,
 ) -> Result<(), VMStatus> {
@@ -256,10 +256,10 @@ pub(crate) fn execute_block_impl<A: VMAdapter>(
 /// but a user transaction or writeset transaction is transformed to a SignatureCheckedTransaction.
 #[derive(Debug)]
 pub enum PreprocessedTransaction {
-    UserTransaction(Box<SignatureCheckedTransaction>),
+    UserTransaction(Box<DiemSignatureCheckedTransaction>),
     WaypointWriteSet(WriteSetPayload),
     BlockMetadata(BlockMetadata),
-    WriteSet(Box<SignatureCheckedTransaction>),
+    WriteSet(Box<DiemSignatureCheckedTransaction>),
     InvalidSignature,
 }
 

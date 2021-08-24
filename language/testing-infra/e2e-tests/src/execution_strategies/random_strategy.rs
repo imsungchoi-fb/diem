@@ -6,7 +6,7 @@ use crate::{
     execution_strategies::types::{Block, Executor, ExecutorResult, PartitionStrategy},
     executor::FakeExecutor,
 };
-use diem_types::{transaction::SignedTransaction, vm_status::VMStatus};
+use diem_types::{transaction::DiemSignedTransaction, vm_status::VMStatus};
 use rand::{
     rngs::{OsRng, StdRng},
     Rng, SeedableRng,
@@ -32,8 +32,8 @@ impl RandomizedStrategy {
 }
 
 impl PartitionStrategy for RandomizedStrategy {
-    type Txn = SignedTransaction;
-    fn partition(&mut self, mut block: Block<Self::Txn>) -> Vec<Block<SignedTransaction>> {
+    type Txn = DiemSignedTransaction;
+    fn partition(&mut self, mut block: Block<Self::Txn>) -> Vec<Block<DiemSignedTransaction>> {
         let mut blocks = vec![];
         while !block.is_empty() {
             let block_size = self.gen.gen_range(0..block.len());
@@ -64,7 +64,7 @@ impl RandomExecutor {
 }
 
 impl Executor for RandomExecutor {
-    type Txn = SignedTransaction;
+    type Txn = DiemSignedTransaction;
     type BlockResult = VMStatus;
     fn execute_block(&mut self, block: Block<Self::Txn>) -> ExecutorResult<Self::BlockResult> {
         let blocks = self.strategy.partition(block);

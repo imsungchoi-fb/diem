@@ -3,14 +3,14 @@
 
 use diem_types::{
     account_address::AccountAddress,
-    transaction::{GovernanceRole, SignedTransaction},
+    transaction::{DiemSignedTransaction, GovernanceRole},
 };
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
 #[derive(Clone)]
 pub struct MempoolTransaction {
-    pub txn: SignedTransaction,
+    pub txn: DiemSignedTransaction,
     // System expiration time of the transaction. It should be removed from mempool by that time.
     pub expiration_time: Duration,
     pub gas_amount: u64,
@@ -21,7 +21,7 @@ pub struct MempoolTransaction {
 
 impl MempoolTransaction {
     pub(crate) fn new(
-        txn: SignedTransaction,
+        txn: DiemSignedTransaction,
         expiration_time: Duration,
         gas_amount: u64,
         ranking_score: u64,

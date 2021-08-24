@@ -17,8 +17,8 @@ use diem_types::{
     chain_id::ChainId,
     event::EventHandle,
     transaction::{
-        authenticator::AuthenticationKey, Module, RawTransaction, Script, ScriptFunction,
-        SignedTransaction, TransactionPayload, WriteSetPayload,
+        authenticator::AuthenticationKey, DiemSignedTransaction, Module, RawTransaction, Script,
+        ScriptFunction, TransactionPayload, WriteSetPayload,
     },
     write_set::{WriteOp, WriteSet, WriteSetMut},
 };
@@ -306,7 +306,7 @@ impl TransactionBuilder {
         )
     }
 
-    pub fn sign(self) -> SignedTransaction {
+    pub fn sign(self) -> DiemSignedTransaction {
         RawTransaction::new(
             *self.sender.address(),
             self.sequence_number.expect("sequence number not set"),
@@ -323,7 +323,7 @@ impl TransactionBuilder {
         .into_inner()
     }
 
-    pub fn sign_multi_agent(self) -> SignedTransaction {
+    pub fn sign_multi_agent(self) -> DiemSignedTransaction {
         let secondary_signer_addresses: Vec<AccountAddress> = self
             .secondary_signers
             .iter()

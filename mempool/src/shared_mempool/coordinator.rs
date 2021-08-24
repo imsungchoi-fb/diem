@@ -24,7 +24,7 @@ use diem_infallible::Mutex;
 use diem_logger::prelude::*;
 use diem_types::{
     mempool_status::MempoolStatus, on_chain_config::OnChainConfigPayload,
-    transaction::SignedTransaction, vm_status::DiscardedVMStatus,
+    transaction::DiemSignedTransaction, vm_status::DiscardedVMStatus,
 };
 use futures::{
     channel::{mpsc, oneshot},
@@ -46,7 +46,7 @@ pub(crate) async fn coordinator<V>(
     executor: Handle,
     network_events: Vec<(NodeNetworkId, MempoolNetworkEvents)>,
     mut client_events: mpsc::Receiver<(
-        SignedTransaction,
+        DiemSignedTransaction,
         oneshot::Sender<Result<SubmissionStatus>>,
     )>,
     mut consensus_requests: mpsc::Receiver<ConsensusRequest>,
@@ -104,7 +104,7 @@ pub(crate) async fn coordinator<V>(
 async fn handle_client_event<V>(
     smp: &mut SharedMempool<V>,
     bounded_executor: &BoundedExecutor,
-    msg: SignedTransaction,
+    msg: DiemSignedTransaction,
     callback: oneshot::Sender<anyhow::Result<(MempoolStatus, Option<DiscardedVMStatus>)>>,
 ) where
     V: TransactionValidation,

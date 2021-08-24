@@ -18,7 +18,7 @@ use diem_logger::prelude::*;
 use diem_types::{
     account_address::AccountAddress,
     mempool_status::{MempoolStatus, MempoolStatusCode},
-    transaction::{GovernanceRole, SignedTransaction},
+    transaction::{DiemSignedTransaction, GovernanceRole},
 };
 use std::{
     cmp::max,
@@ -101,7 +101,7 @@ impl Mempool {
     /// Performs basic validation: checks account's sequence number.
     pub(crate) fn add_txn(
         &mut self,
-        txn: SignedTransaction,
+        txn: DiemSignedTransaction,
         gas_amount: u64,
         ranking_score: u64,
         db_sequence_number: u64,
@@ -156,7 +156,7 @@ impl Mempool {
         &mut self,
         batch_size: u64,
         mut seen: HashSet<TxnPointer>,
-    ) -> Vec<SignedTransaction> {
+    ) -> Vec<DiemSignedTransaction> {
         let mut result = vec![];
         // Helper DS. Helps to mitigate scenarios where account submits several transactions
         // with increasing gas price (e.g. user submits transactions with sequence number 1, 2
@@ -252,12 +252,16 @@ impl Mempool {
         &mut self,
         timeline_id: u64,
         count: usize,
-    ) -> (Vec<SignedTransaction>, u64) {
+    ) -> (Vec<DiemSignedTransaction>, u64) {
         self.transactions.read_timeline(timeline_id, count)
     }
 
     /// Read transactions from timeline from `start_id` (exclusive) to `end_id` (inclusive).
-    pub(crate) fn timeline_range(&mut self, start_id: u64, end_id: u64) -> Vec<SignedTransaction> {
+    pub(crate) fn timeline_range(
+        &mut self,
+        start_id: u64,
+        end_id: u64,
+    ) -> Vec<DiemSignedTransaction> {
         self.transactions.timeline_range(start_id, end_id)
     }
 

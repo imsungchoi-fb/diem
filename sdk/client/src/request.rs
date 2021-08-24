@@ -3,7 +3,7 @@
 
 use super::{JsonRpcVersion, Method};
 use diem_types::{
-    account_address::AccountAddress, event::EventKey, transaction::SignedTransaction,
+    account_address::AccountAddress, event::EventKey, transaction::DiemSignedTransaction,
 };
 use serde::{Deserialize, Serialize};
 use std::sync::atomic::AtomicU64;
@@ -35,7 +35,7 @@ pub enum MethodRequest {
 }
 
 impl MethodRequest {
-    pub fn submit(txn: &SignedTransaction) -> Result<Self, bcs::Error> {
+    pub fn submit(txn: &DiemSignedTransaction) -> Result<Self, bcs::Error> {
         let txn_payload = hex::encode(bcs::to_bytes(txn)?);
         Ok(Self::Submit((txn_payload,)))
     }

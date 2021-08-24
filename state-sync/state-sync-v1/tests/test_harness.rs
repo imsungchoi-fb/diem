@@ -29,7 +29,8 @@ use diem_types::{
     proof::TransactionListProof,
     test_helpers::transaction_test_helpers::get_test_signed_txn,
     transaction::{
-        authenticator::AuthenticationKey, SignedTransaction, Transaction, TransactionListWithProof,
+        authenticator::AuthenticationKey, DiemSignedTransaction, Transaction,
+        TransactionListWithProof,
     },
     validator_config::ValidatorConfig,
     validator_info::ValidatorInfo,
@@ -708,7 +709,10 @@ impl MockStorage {
 
     // Generate new dummy txns and updates the LI
     // with the version corresponding to the new transactions, signed by this storage signer.
-    pub fn commit_new_txns(&mut self, num_txns: u64) -> (Vec<Transaction>, Vec<SignedTransaction>) {
+    pub fn commit_new_txns(
+        &mut self,
+        num_txns: u64,
+    ) -> (Vec<Transaction>, Vec<DiemSignedTransaction>) {
         let mut committed_txns = vec![];
         let mut signed_txns = vec![];
         for _ in 0..num_txns {

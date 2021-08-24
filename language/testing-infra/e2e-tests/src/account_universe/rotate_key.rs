@@ -12,7 +12,7 @@ use diem_crypto::{
 };
 use diem_proptest_helpers::Index;
 use diem_types::{
-    transaction::{authenticator::AuthenticationKey, SignedTransaction, TransactionStatus},
+    transaction::{authenticator::AuthenticationKey, DiemSignedTransaction, TransactionStatus},
     vm_status::{KeptVMStatus, StatusCode},
 };
 use proptest::prelude::*;
@@ -33,7 +33,7 @@ impl AUTransactionGen for RotateKeyGen {
     fn apply(
         &self,
         universe: &mut AccountUniverse,
-    ) -> (SignedTransaction, (TransactionStatus, u64)) {
+    ) -> (DiemSignedTransaction, (TransactionStatus, u64)) {
         let sender = universe.pick(self.sender).1;
 
         let key_hash = AuthenticationKey::ed25519(&self.new_keypair.public_key).to_vec();

@@ -28,7 +28,7 @@ use diem_types::{
     block_metadata::BlockMetadata,
     on_chain_config::{DiemVersion, VMConfig, VMPublishingOption, DIEM_VERSION_2, DIEM_VERSION_3},
     transaction::{
-        ChangeSet, Module, SignatureCheckedTransaction, SignedTransaction, Transaction,
+        ChangeSet, DiemSignatureCheckedTransaction, DiemSignedTransaction, Module, Transaction,
         TransactionOutput, TransactionPayload, TransactionStatus, VMValidatorResult,
         WriteSetPayload,
     },
@@ -310,7 +310,7 @@ impl DiemVM {
     pub(crate) fn execute_user_transaction<S: MoveResolver>(
         &self,
         storage: &S,
-        txn: &SignatureCheckedTransaction,
+        txn: &DiemSignatureCheckedTransaction,
         log_context: &AdapterLogSchema,
     ) -> (VMStatus, TransactionOutput) {
         macro_rules! unwrap_or_discard {
@@ -544,7 +544,7 @@ impl DiemVM {
     pub(crate) fn process_writeset_transaction<S: MoveResolver + StateView>(
         &self,
         storage: &S,
-        txn: &SignatureCheckedTransaction,
+        txn: &DiemSignatureCheckedTransaction,
         log_context: &AdapterLogSchema,
     ) -> Result<(VMStatus, TransactionOutput), VMStatus> {
         fail_point!("move_adapter::process_writeset_transaction", |_| {
@@ -740,7 +740,7 @@ impl VMValidator for DiemVM {
     ///    We don't check this item for now and would execute the check at execution time.
     fn validate_transaction(
         &self,
-        transaction: SignedTransaction,
+        transaction: DiemSignedTransaction,
         state_view: &dyn StateView,
     ) -> VMValidatorResult {
         validate_signed_transaction::<Self>(self, transaction, state_view)
@@ -752,11 +752,11 @@ impl VMAdapter for DiemVM {
         self.0.new_session(remote)
     }
 
-    fn check_signature(txn: SignedTransaction) -> Result<SignatureCheckedTransaction> {
+    fn check_signature(txn: DiemSignedTransaction) -> Result<DiemSignatureCheckedTransaction> {
         txn.check_signature()
     }
 
-    fn check_transaction_format(&self, txn: &SignedTransaction) -> Result<(), VMStatus> {
+    fn check_transaction_format(&self, txn: &DiemSignedTransaction) -> Result<(), VMStatus> {
         if txn.is_multi_agent() && self.0.get_diem_version()? < DIEM_VERSION_3 {
             // Multi agent is not allowed
             return Err(VMStatus::Error(StatusCode::FEATURE_UNDER_GATING));
@@ -770,7 +770,7 @@ impl VMAdapter for DiemVM {
 
     fn get_gas_price<S: MoveResolver>(
         &self,
-        txn: &SignedTransaction,
+        txn: &DiemSignedTransaction,
         remote_cache: &S,
     ) -> Result<u64, VMStatus> {
         let gas_price = txn.gas_unit_price();
@@ -789,7 +789,7 @@ impl VMAdapter for DiemVM {
     fn run_prologue<S: MoveResolver>(
         &self,
         session: &mut Session<S>,
-        transaction: &SignatureCheckedTransaction,
+        transaction: &DiemSignatureCheckedTransaction,
         log_context: &AdapterLogSchema,
     ) -> Result<(), VMStatus> {
         let currency_code = get_gas_currency_code(transaction)?;

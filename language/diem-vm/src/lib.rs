@@ -131,7 +131,7 @@ pub use crate::{diem_vm::DiemVM, diem_vm_impl::convert_changeset_and_events};
 use diem_state_view::StateView;
 use diem_types::{
     access_path::AccessPath,
-    transaction::{SignedTransaction, Transaction, TransactionOutput, VMValidatorResult},
+    transaction::{DiemSignedTransaction, Transaction, TransactionOutput, VMValidatorResult},
     vm_status::VMStatus,
 };
 use move_core_types::{
@@ -144,7 +144,7 @@ pub trait VMValidator {
     /// Executes the prologue of the Diem Account and verifies that the transaction is valid.
     fn validate_transaction(
         &self,
-        transaction: SignedTransaction,
+        transaction: DiemSignedTransaction,
         state_view: &dyn StateView,
     ) -> VMValidatorResult;
 }

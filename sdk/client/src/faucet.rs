@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{BlockingClient, Error, Result};
-use diem_types::transaction::{authenticator::AuthenticationKey, SignedTransaction};
+use diem_types::transaction::{authenticator::AuthenticationKey, DiemSignedTransaction};
 
 pub struct FaucetClient {
     url: String,
@@ -40,7 +40,7 @@ impl FaucetClient {
             return Err(Error::status(status_code.as_u16()));
         }
         let bytes = hex::decode(body).map_err(Error::decode)?;
-        let txns: Vec<SignedTransaction> = bcs::from_bytes(&bytes).map_err(Error::decode)?;
+        let txns: Vec<DiemSignedTransaction> = bcs::from_bytes(&bytes).map_err(Error::decode)?;
 
         for txn in txns {
             self.json_rpc_client

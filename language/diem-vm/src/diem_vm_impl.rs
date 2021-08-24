@@ -22,7 +22,7 @@ use diem_types::{
     on_chain_config::{
         ConfigStorage, DiemVersion, OnChainConfig, VMConfig, VMPublishingOption, DIEM_VERSION_3,
     },
-    transaction::{SignedTransaction, TransactionOutput, TransactionStatus},
+    transaction::{DiemSignedTransaction, TransactionOutput, TransactionStatus},
     vm_status::{KeptVMStatus, StatusCode, VMStatus},
     write_set::{WriteOp, WriteSet, WriteSetMut},
 };
@@ -589,7 +589,7 @@ pub(crate) fn get_transaction_output<A: AccessPathCache, S: MoveResolver>(
     ))
 }
 
-pub(crate) fn get_gas_currency_code(txn: &SignedTransaction) -> Result<Identifier, VMStatus> {
+pub(crate) fn get_gas_currency_code(txn: &DiemSignedTransaction) -> Result<Identifier, VMStatus> {
     let currency_code_string = txn.gas_currency_code();
     match account_config::from_currency_code_string(currency_code_string) {
         Ok(code) => Ok(code),

@@ -8,9 +8,10 @@ use crate::{
         traits::Uniform,
     },
     transaction_builder::TransactionBuilder,
-    types::transaction::{authenticator::AuthenticationKey, RawTransaction, SignedTransaction},
+    types::transaction::{authenticator::AuthenticationKey, RawTransaction},
 };
 
+use crate::types::transaction::DiemSignedTransaction;
 pub use diem_types::*;
 
 #[derive(Debug)]
@@ -42,7 +43,7 @@ impl LocalAccount {
         Self::new(address, key, 0)
     }
 
-    pub fn sign_transaction(&self, txn: RawTransaction) -> SignedTransaction {
+    pub fn sign_transaction(&self, txn: RawTransaction) -> DiemSignedTransaction {
         txn.sign(self.private_key(), self.public_key().clone())
             .expect("Signing a txn can't fail")
             .into_inner()
@@ -51,7 +52,7 @@ impl LocalAccount {
     pub fn sign_with_transaction_builder(
         &mut self,
         builder: TransactionBuilder,
-    ) -> SignedTransaction {
+    ) -> DiemSignedTransaction {
         let raw_txn = builder
             .sender(self.address())
             .sequence_number(self.sequence_number())
@@ -64,7 +65,7 @@ impl LocalAccount {
         &mut self,
         secondary_signers: Vec<&Self>,
         builder: TransactionBuilder,
-    ) -> SignedTransaction {
+    ) -> DiemSignedTransaction {
         let secondary_signer_addresses = secondary_signers
             .iter()
             .map(|signer| signer.address())

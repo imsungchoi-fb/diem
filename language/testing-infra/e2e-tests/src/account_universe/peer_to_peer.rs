@@ -6,7 +6,7 @@ use crate::{
     common_transactions::peer_to_peer_txn,
 };
 use diem_types::{
-    transaction::{SignedTransaction, TransactionStatus},
+    transaction::{DiemSignedTransaction, TransactionStatus},
     vm_status::{known_locations, KeptVMStatus, StatusCode},
 };
 use proptest::prelude::*;
@@ -28,7 +28,7 @@ impl AUTransactionGen for P2PTransferGen {
     fn apply(
         &self,
         universe: &mut AccountUniverse,
-    ) -> (SignedTransaction, (TransactionStatus, u64)) {
+    ) -> (DiemSignedTransaction, (TransactionStatus, u64)) {
         let AccountPair {
             account_1: sender,
             account_2: receiver,

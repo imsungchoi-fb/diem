@@ -11,7 +11,9 @@ use crate::{
     ledger_info::LedgerInfo,
     nibble::nibble_path::NibblePath,
     proof::{accumulator::InMemoryAccumulator, TransactionInfoWithProof, TransactionListProof},
-    transaction::authenticator::{AccountAuthenticator, TransactionAuthenticator},
+    transaction::authenticator::{
+        AccountAuthenticator, DiemTransactionAuthenticator, TransactionAuthenticator,
+    },
     vm_status::{DiscardedVMStatus, KeptVMStatus, StatusCode, StatusType, VMStatus},
     write_set::WriteSet,
 };
@@ -263,7 +265,7 @@ impl RawTransaction {
         self,
         private_key: &Ed25519PrivateKey,
         public_key: Ed25519PublicKey,
-    ) -> Result<SignatureCheckedTransaction> {
+    ) -> Result<DiemSignatureCheckedTransaction> {
         let signature = private_key.sign(&self);
         Ok(SignatureCheckedTransaction(SignedTransaction::new(
             self, public_key, signature,
@@ -281,7 +283,7 @@ impl RawTransaction {
         sender_private_key: &Ed25519PrivateKey,
         secondary_signers: Vec<AccountAddress>,
         secondary_private_keys: Vec<&Ed25519PrivateKey>,
-    ) -> Result<SignatureCheckedTransaction> {
+    ) -> Result<DiemSignatureCheckedTransaction> {
         let message =
             RawTransactionWithData::new_multi_agent(self.clone(), secondary_signers.clone());
         let sender_signature = sender_private_key.sign(&message);
@@ -319,7 +321,7 @@ impl RawTransaction {
         self,
         private_key: &Ed25519PrivateKey,
         public_key: Ed25519PublicKey,
-    ) -> Result<SignatureCheckedTransaction> {
+    ) -> Result<DiemSignatureCheckedTransaction> {
         let signature = private_key.sign(&self);
         Ok(SignatureCheckedTransaction(
             SignedTransaction::new_multisig(self, public_key.into(), signature.into()),
@@ -453,6 +455,8 @@ impl WriteSetPayload {
     }
 }
 
+pub type DiemSignedTransaction = SignedTransaction<DiemTransactionAuthenticator>;
+
 /// A transaction that has been signed.
 ///
 /// A `SignedTransaction` is a single transaction that can be atomically executed. Clients submit
@@ -462,22 +466,25 @@ impl WriteSetPayload {
 /// transaction whose signature is statically guaranteed to be verified, see
 /// [`SignatureCheckedTransaction`].
 #[derive(Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
-pub struct SignedTransaction {
+pub struct SignedTransaction<A> {
     /// The raw transaction
     raw_txn: RawTransaction,
 
     /// Public key and signature to authenticate
-    authenticator: TransactionAuthenticator,
+    authenticator: A,
 }
+
+pub type DiemSignatureCheckedTransaction =
+    SignatureCheckedTransaction<DiemTransactionAuthenticator>;
 
 /// A transaction for which the signature has been verified. Created by
 /// [`SignedTransaction::check_signature`] and [`RawTransaction::sign`].
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub struct SignatureCheckedTransaction(SignedTransaction);
+pub struct SignatureCheckedTransaction<A>(SignedTransaction<A>);
 
-impl SignatureCheckedTransaction {
+impl<A> SignatureCheckedTransaction<A> {
     /// Returns the `SignedTransaction` within.
-    pub fn into_inner(self) -> SignedTransaction {
+    pub fn into_inner(self) -> SignedTransaction<A> {
         self.0
     }
 
@@ -487,15 +494,15 @@ impl SignatureCheckedTransaction {
     }
 }
 
-impl Deref for SignatureCheckedTransaction {
-    type Target = SignedTransaction;
+impl<A> Deref for SignatureCheckedTransaction<A> {
+    type Target = SignedTransaction<A>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl fmt::Debug for SignedTransaction {
+impl<A: fmt::Debug> fmt::Debug for SignedTransaction<A> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
@@ -509,49 +516,9 @@ impl fmt::Debug for SignedTransaction {
     }
 }
 
-impl SignedTransaction {
-    pub fn new(
-        raw_txn: RawTransaction,
-        public_key: Ed25519PublicKey,
-        signature: Ed25519Signature,
-    ) -> SignedTransaction {
-        let authenticator = TransactionAuthenticator::ed25519(public_key, signature);
-        SignedTransaction {
-            raw_txn,
-            authenticator,
-        }
-    }
-
-    pub fn new_multisig(
-        raw_txn: RawTransaction,
-        public_key: MultiEd25519PublicKey,
-        signature: MultiEd25519Signature,
-    ) -> SignedTransaction {
-        let authenticator = TransactionAuthenticator::multi_ed25519(public_key, signature);
-        SignedTransaction {
-            raw_txn,
-            authenticator,
-        }
-    }
-
-    pub fn new_multi_agent(
-        raw_txn: RawTransaction,
-        sender: AccountAuthenticator,
-        secondary_signer_addresses: Vec<AccountAddress>,
-        secondary_signers: Vec<AccountAuthenticator>,
-    ) -> Self {
-        SignedTransaction {
-            raw_txn,
-            authenticator: TransactionAuthenticator::multi_agent(
-                sender,
-                secondary_signer_addresses,
-                secondary_signers,
-            ),
-        }
-    }
-
-    pub fn authenticator(&self) -> TransactionAuthenticator {
-        self.authenticator.clone()
+impl<A> SignedTransaction<A> {
+    pub fn authenticator(&self) -> &A {
+        &self.authenticator
     }
 
     pub fn sender(&self) -> AccountAddress {
@@ -595,19 +562,14 @@ impl SignedTransaction {
             .expect("Unable to serialize RawTransaction")
             .len()
     }
+}
 
+impl<A: TransactionAuthenticator> SignedTransaction<A> {
     /// Checks that the signature of given transaction. Returns `Ok(SignatureCheckedTransaction)` if
     /// the signature is valid.
-    pub fn check_signature(self) -> Result<SignatureCheckedTransaction> {
+    pub fn check_signature(self) -> Result<SignatureCheckedTransaction<A>> {
         self.authenticator.verify(&self.raw_txn)?;
         Ok(SignatureCheckedTransaction(self))
-    }
-
-    pub fn contains_duplicate_signers(&self) -> bool {
-        let mut all_signer_addresses = self.authenticator.secondary_signer_addreses();
-        all_signer_addresses.push(self.sender());
-        let mut s = BTreeSet::new();
-        all_signer_addresses.iter().any(|a| !s.insert(*a))
     }
 
     pub fn format_for_client(&self, get_transaction_name: impl Fn(&[u8]) -> String) -> String {
@@ -620,11 +582,60 @@ impl SignedTransaction {
             self.authenticator
         )
     }
+}
+
+impl DiemSignedTransaction {
+    pub fn new(
+        raw_txn: RawTransaction,
+        public_key: Ed25519PublicKey,
+        signature: Ed25519Signature,
+    ) -> Self {
+        let authenticator = DiemTransactionAuthenticator::ed25519(public_key, signature);
+        SignedTransaction {
+            raw_txn,
+            authenticator,
+        }
+    }
+
+    pub fn new_multisig(
+        raw_txn: RawTransaction,
+        public_key: MultiEd25519PublicKey,
+        signature: MultiEd25519Signature,
+    ) -> Self {
+        let authenticator = DiemTransactionAuthenticator::multi_ed25519(public_key, signature);
+        SignedTransaction {
+            raw_txn,
+            authenticator,
+        }
+    }
+
+    pub fn new_multi_agent(
+        raw_txn: RawTransaction,
+        sender: AccountAuthenticator,
+        secondary_signer_addresses: Vec<AccountAddress>,
+        secondary_signers: Vec<AccountAuthenticator>,
+    ) -> Self {
+        SignedTransaction {
+            raw_txn,
+            authenticator: DiemTransactionAuthenticator::multi_agent(
+                sender,
+                secondary_signer_addresses,
+                secondary_signers,
+            ),
+        }
+    }
+
+    pub fn contains_duplicate_signers(&self) -> bool {
+        let mut all_signer_addresses = self.authenticator.secondary_signer_addreses();
+        all_signer_addresses.push(self.sender());
+        let mut s = BTreeSet::new();
+        all_signer_addresses.iter().any(|a| !s.insert(*a))
+    }
 
     pub fn is_multi_agent(&self) -> bool {
         matches!(
             self.authenticator,
-            TransactionAuthenticator::MultiAgent { .. }
+            DiemTransactionAuthenticator::MultiAgent { .. }
         )
     }
 }
@@ -1238,7 +1249,7 @@ pub enum Transaction {
     /// transaction, etc.
     /// TODO: We need to rename SignedTransaction to SignedUserTransaction, as well as all the other
     ///       transaction types we had in our codebase.
-    UserTransaction(SignedTransaction),
+    UserTransaction(DiemSignedTransaction),
 
     /// Transaction that applies a WriteSet to the current storage, it's applied manually via db-bootstrapper.
     GenesisTransaction(WriteSetPayload),
@@ -1248,7 +1259,7 @@ pub enum Transaction {
 }
 
 impl Transaction {
-    pub fn as_signed_user_txn(&self) -> Result<&SignedTransaction> {
+    pub fn as_signed_user_txn(&self) -> Result<&DiemSignedTransaction> {
         match self {
             Transaction::UserTransaction(txn) => Ok(txn),
             _ => Err(format_err!("Not a user transaction.")),
@@ -1268,7 +1279,7 @@ impl Transaction {
     }
 }
 
-impl TryFrom<Transaction> for SignedTransaction {
+impl TryFrom<Transaction> for DiemSignedTransaction {
     type Error = Error;
 
     fn try_from(txn: Transaction) -> Result<Self> {

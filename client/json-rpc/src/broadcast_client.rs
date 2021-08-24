@@ -9,7 +9,7 @@ use diem_client::{
     Client, MethodRequest, MethodResponse, Response, Result,
 };
 use diem_types::{
-    account_address::AccountAddress, event::EventKey, transaction::SignedTransaction,
+    account_address::AccountAddress, event::EventKey, transaction::DiemSignedTransaction,
 };
 use futures::future::join_all;
 use rand::seq::{SliceChooseIter, SliceRandom};
@@ -68,7 +68,7 @@ impl BroadcastingClient {
         Ok(ok_results.swap_remove(0))
     }
 
-    pub async fn submit(&self, txn: &SignedTransaction) -> Result<Response<()>> {
+    pub async fn submit(&self, txn: &DiemSignedTransaction) -> Result<Response<()>> {
         let futures = self.random_clients().map(|client| client.submit(txn));
         let results = join_all(futures).await;
         collect_results(results)

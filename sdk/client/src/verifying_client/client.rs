@@ -15,7 +15,7 @@ use diem_json_rpc_types::views::{
 use diem_types::{
     account_address::AccountAddress,
     event::EventKey,
-    transaction::{SignedTransaction, Transaction, Version},
+    transaction::{DiemSignedTransaction, Transaction, Version},
     trusted_state::TrustedState,
     waypoint::Waypoint,
 };
@@ -101,7 +101,7 @@ impl<S: StateStore> VerifyingClient<S> {
 
     pub async fn wait_for_signed_transaction(
         &self,
-        txn: &SignedTransaction,
+        txn: &DiemSignedTransaction,
         timeout: Option<Duration>,
         delay: Option<Duration>,
     ) -> Result<Response<TransactionView>, WaitForTransactionError> {
@@ -217,7 +217,7 @@ impl<S: StateStore> VerifyingClient<S> {
     /// valid transaction will eventually be committed. This client handles a
     /// connection to a single server, so the broadcasting needs to happen at a
     /// higher layer.
-    pub async fn submit(&self, txn: &SignedTransaction) -> Result<Response<()>> {
+    pub async fn submit(&self, txn: &DiemSignedTransaction) -> Result<Response<()>> {
         self.request(MethodRequest::submit(txn).map_err(Error::request)?)
             .await?
             .and_then(MethodResponse::try_into_submit)

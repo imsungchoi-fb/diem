@@ -22,7 +22,7 @@ use diem_crypto::{hash::CryptoHash, HashValue};
 use diem_types::{
     account_address::AccountAddress,
     event::EventKey,
-    transaction::{SignedTransaction, Transaction},
+    transaction::{DiemSignedTransaction, Transaction},
 };
 use move_core_types::move_resource::{MoveResource, MoveStructType};
 use reqwest::Client as ReqwestClient;
@@ -62,7 +62,7 @@ impl Client {
 
     pub async fn wait_for_signed_transaction(
         &self,
-        txn: &SignedTransaction,
+        txn: &DiemSignedTransaction,
         timeout: Option<Duration>,
         delay: Option<Duration>,
     ) -> Result<Response<TransactionView>, WaitForTransactionError> {
@@ -136,7 +136,7 @@ impl Client {
         resp.and_then(|json| MethodResponse::from_json(method, json).map_err(Error::decode))
     }
 
-    pub async fn submit(&self, txn: &SignedTransaction) -> Result<Response<()>> {
+    pub async fn submit(&self, txn: &DiemSignedTransaction) -> Result<Response<()>> {
         let request = JsonRpcRequest::new(MethodRequest::submit(txn).map_err(Error::request)?);
         self.send_without_retry(&request, true).await
     }

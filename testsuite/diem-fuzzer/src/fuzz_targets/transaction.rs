@@ -3,7 +3,7 @@
 
 use crate::{corpus_from_strategy, fuzz_data_to_value, FuzzTargetImpl};
 use diem_proptest_helpers::ValueGenerator;
-use diem_types::transaction::SignedTransaction;
+use diem_types::transaction::{DiemSignedTransaction, SignedTransaction};
 use language_e2e_tests::account_universe::{
     all_transactions_strategy, log_balance_strategy, run_and_assert_universe, AUTransactionGen,
     AccountUniverseGen,
@@ -52,12 +52,12 @@ impl FuzzTargetImpl for SignedTransactionTarget {
     }
 
     fn generate(&self, _idx: usize, gen: &mut ValueGenerator) -> Option<Vec<u8>> {
-        let value = gen.generate(any_with::<SignedTransaction>(()));
+        let value = gen.generate(any_with::<DiemSignedTransaction>(()));
         Some(bcs::to_bytes(&value).expect("serialization should work"))
     }
 
     fn fuzz(&self, data: &[u8]) {
-        let _: Result<SignedTransaction, _> = bcs::from_bytes(data);
+        let _: Result<DiemSignedTransaction, _> = bcs::from_bytes(data);
     }
 }
 
@@ -67,7 +67,7 @@ impl FuzzTargetImpl for SignedTransactionTarget {
 #[derive(Clone, Debug, Default)]
 pub struct MutatedSignedTransaction;
 
-static SIGNED_TXN: Lazy<SignedTransaction> = Lazy::new(|| {
+static SIGNED_TXN: Lazy<DiemSignedTransaction> = Lazy::new(|| {
     let seed = [0u8; 32];
     let recorder_rng = test_runner::TestRng::from_seed(RngAlgorithm::ChaCha, &seed);
     let mut runner = TestRunner::new_with_rng(test_runner::Config::default(), recorder_rng);
@@ -99,7 +99,7 @@ impl FuzzTargetImpl for MutatedSignedTransaction {
             return;
         }
 
-        if let Ok(signed_txn) = bcs::from_bytes::<SignedTransaction>(data) {
+        if let Ok(signed_txn) = bcs::from_bytes::<DiemSignedTransaction>(data) {
             assert_ne!(*SIGNED_TXN, signed_txn);
         }
     }
@@ -114,7 +114,7 @@ impl FuzzTargetImpl for TwoSignedTransactions {
     }
 
     fn generate(&self, _idx: usize, gen: &mut ValueGenerator) -> Option<Vec<u8>> {
-        let txn = gen.generate(any_with::<SignedTransaction>(()));
+        let txn = gen.generate(any_with::<DiemSignedTransaction>(()));
         let mut serialized_txn = bcs::to_bytes(&txn).expect("serialization should work");
         // return [serialized_txn | serialized_txn]
         serialized_txn.extend_from_slice(&serialized_txn.clone());
@@ -136,8 +136,8 @@ impl FuzzTargetImpl for TwoSignedTransactions {
         }
 
         // ensure the deserialization is different
-        if let Ok(txn1) = bcs::from_bytes::<SignedTransaction>(txn1) {
-            if let Ok(txn2) = bcs::from_bytes::<SignedTransaction>(txn2) {
+        if let Ok(txn1) = bcs::from_bytes::<DiemSignedTransaction>(txn1) {
+            if let Ok(txn2) = bcs::from_bytes::<DiemSignedTransaction>(txn2) {
                 assert_ne!(txn1, txn2);
             }
         }

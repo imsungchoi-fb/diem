@@ -7,7 +7,7 @@ use diem_management::error::Error;
 use diem_types::{
     account_address::AccountAddress, account_config, account_config::AccountResource,
     account_state::AccountState, account_state_blob::AccountStateBlob,
-    transaction::SignedTransaction, validator_config::ValidatorConfigResource,
+    transaction::DiemSignedTransaction, validator_config::ValidatorConfigResource,
     validator_info::ValidatorInfo,
 };
 use std::convert::TryFrom;
@@ -26,7 +26,7 @@ impl JsonRpcClientWrapper {
 
     pub fn submit_transaction(
         &self,
-        transaction: SignedTransaction,
+        transaction: DiemSignedTransaction,
     ) -> Result<TransactionContext, Error> {
         self.client
             .submit(&transaction)

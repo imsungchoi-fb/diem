@@ -17,7 +17,7 @@ use diem_types::{
         config_address, new_epoch_event_key, ConfigurationResource, OnChainConfig, ValidatorSet,
     },
     transaction::{
-        RawTransaction, Script, SignedTransaction, Transaction, TransactionArgument,
+        DiemSignedTransaction, RawTransaction, Script, Transaction, TransactionArgument,
         TransactionOutput, TransactionPayload, TransactionStatus,
     },
     vm_status::{KeptVMStatus, StatusCode, VMStatus},
@@ -340,7 +340,7 @@ pub fn encode_reconfiguration_transaction(sender: AccountAddress) -> Transaction
     )
 }
 
-fn decode_transaction(txn: &SignedTransaction) -> MockVMTransaction {
+fn decode_transaction(txn: &DiemSignedTransaction) -> MockVMTransaction {
     let sender = txn.sender();
     match txn.payload() {
         TransactionPayload::Script(script) => {

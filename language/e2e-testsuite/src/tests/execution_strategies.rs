@@ -1,7 +1,7 @@
 // Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
-use diem_types::{account_config, transaction::SignedTransaction, vm_status::VMStatus};
+use diem_types::{account_config, transaction::DiemSignedTransaction, vm_status::VMStatus};
 use language_e2e_tests::{
     account::Account,
     common_transactions::create_account_txn,
@@ -17,7 +17,7 @@ use language_e2e_tests::{
     },
 };
 
-fn txn(seq_num: u64) -> SignedTransaction {
+fn txn(seq_num: u64) -> DiemSignedTransaction {
     let account = Account::new();
     let diem_root = Account::new_diem_root();
     create_account_txn(
@@ -111,7 +111,7 @@ fn test_execution_strategies() {
         println!("===========================================================================");
         let block = (0..10).map(txn).collect();
 
-        let mut exec = MultiExecutor::<SignedTransaction, VMStatus>::new();
+        let mut exec = MultiExecutor::<DiemSignedTransaction, VMStatus>::new();
         exec.add_executor(RandomExecutor::from_os_rng());
         exec.add_executor(RandomExecutor::from_os_rng());
         exec.add_executor(RandomExecutor::from_os_rng());

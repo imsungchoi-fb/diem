@@ -22,8 +22,8 @@ use diem_crypto::ed25519::Ed25519PrivateKey;
 use diem_types::{
     account_address::AccountAddress,
     transaction::{
-        authenticator::AuthenticationKey, helpers::TransactionSigner, RawTransaction,
-        SignedTransaction,
+        authenticator::AuthenticationKey, helpers::TransactionSigner, DiemSignedTransaction,
+        RawTransaction, SignedTransaction,
     },
 };
 use rand::{rngs::OsRng, Rng};
@@ -158,7 +158,7 @@ impl WalletLibrary {
     /// Simple public function that allows to sign a Diem RawTransaction with the PrivateKey
     /// associated to a particular AccountAddress. If the PrivateKey associated to an
     /// AccountAddress is not contained in the addr_map, then this function will return an Error
-    pub fn sign_txn(&self, txn: RawTransaction) -> Result<SignedTransaction> {
+    pub fn sign_txn(&self, txn: RawTransaction) -> Result<DiemSignedTransaction> {
         if let Some(child) = self.addr_map.get(&txn.sender()) {
             let child_key = self.key_factory.private_child(*child)?;
             let signature = child_key.sign(&txn);
@@ -199,7 +199,7 @@ impl WalletLibrary {
 
 /// WalletLibrary naturally support TransactionSigner trait.
 impl TransactionSigner for WalletLibrary {
-    fn sign_txn(&self, raw_txn: RawTransaction) -> Result<SignedTransaction, anyhow::Error> {
+    fn sign_txn(&self, raw_txn: RawTransaction) -> Result<DiemSignedTransaction, anyhow::Error> {
         self.sign_txn(raw_txn)
     }
 }

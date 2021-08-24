@@ -6,8 +6,9 @@ use crate::{
     account_config::XUS_NAME,
     chain_id::ChainId,
     transaction::{
-        authenticator::AccountAuthenticator, Module, RawTransaction, RawTransactionWithData,
-        Script, SignatureCheckedTransaction, SignedTransaction, TransactionPayload,
+        authenticator::AccountAuthenticator, DiemSignatureCheckedTransaction,
+        DiemSignedTransaction, Module, RawTransaction, RawTransactionWithData, Script,
+        SignedTransaction, TransactionPayload,
     },
     write_set::WriteSet,
 };
@@ -34,7 +35,7 @@ pub fn get_test_signed_module_publishing_transaction(
     private_key: &Ed25519PrivateKey,
     public_key: Ed25519PublicKey,
     module: Module,
-) -> SignedTransaction {
+) -> DiemSignedTransaction {
     let expiration_time = expiration_time(10);
     let raw_txn = RawTransaction::new_module(
         sender,
@@ -63,7 +64,7 @@ pub fn get_test_signed_transaction(
     gas_unit_price: u64,
     gas_currency_code: String,
     max_gas_amount: Option<u64>,
-) -> SignedTransaction {
+) -> DiemSignedTransaction {
     let raw_txn = RawTransaction::new_script(
         sender,
         sequence_number,
@@ -91,7 +92,7 @@ pub fn get_test_unchecked_transaction(
     gas_unit_price: u64,
     gas_currency_code: String,
     max_gas_amount: Option<u64>,
-) -> SignedTransaction {
+) -> DiemSignedTransaction {
     get_test_unchecked_transaction_(
         sender,
         sequence_number,
@@ -118,7 +119,7 @@ fn get_test_unchecked_transaction_(
     gas_currency_code: String,
     max_gas_amount: Option<u64>,
     chain_id: ChainId,
-) -> SignedTransaction {
+) -> DiemSignedTransaction {
     let raw_txn = RawTransaction::new_script(
         sender,
         sequence_number,
@@ -143,7 +144,7 @@ pub fn get_test_signed_txn(
     private_key: &Ed25519PrivateKey,
     public_key: Ed25519PublicKey,
     script: Option<Script>,
-) -> SignedTransaction {
+) -> DiemSignedTransaction {
     let expiration_time = expiration_time(10);
     get_test_signed_transaction(
         sender,
@@ -164,7 +165,7 @@ pub fn get_test_unchecked_txn(
     private_key: &Ed25519PrivateKey,
     public_key: Ed25519PublicKey,
     script: Option<Script>,
-) -> SignedTransaction {
+) -> DiemSignedTransaction {
     let expiration_time = expiration_time(10);
     get_test_unchecked_transaction(
         sender,
@@ -188,7 +189,7 @@ pub fn get_test_unchecked_multi_agent_txn(
     secondary_private_keys: Vec<&Ed25519PrivateKey>,
     secondary_public_keys: Vec<Ed25519PublicKey>,
     script: Option<Script>,
-) -> SignedTransaction {
+) -> DiemSignedTransaction {
     let expiration_time = expiration_time(10);
     let raw_txn = RawTransaction::new(
         sender,
@@ -231,7 +232,7 @@ pub fn get_test_txn_with_chain_id(
     private_key: &Ed25519PrivateKey,
     public_key: Ed25519PublicKey,
     chain_id: ChainId,
-) -> SignedTransaction {
+) -> DiemSignedTransaction {
     let expiration_time = expiration_time(10);
     get_test_unchecked_transaction_(
         sender,
@@ -253,7 +254,7 @@ pub fn get_write_set_txn(
     private_key: &Ed25519PrivateKey,
     public_key: Ed25519PublicKey,
     write_set: Option<WriteSet>,
-) -> SignatureCheckedTransaction {
+) -> DiemSignatureCheckedTransaction {
     let write_set = write_set.unwrap_or_default();
     RawTransaction::new_write_set(sender, sequence_number, write_set, ChainId::test())
         .sign(private_key, public_key)

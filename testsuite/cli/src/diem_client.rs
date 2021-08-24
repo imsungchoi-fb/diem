@@ -11,7 +11,7 @@ use diem_types::{
     ledger_info::LedgerInfoWithSignatures,
     proof::{AccumulatorConsistencyProof, TransactionAccumulatorSummary},
     state_proof::StateProof,
-    transaction::{SignedTransaction, Version},
+    transaction::{DiemSignedTransaction, Version},
     trusted_state::{TrustedState, TrustedStateChange},
     waypoint::Waypoint,
 };
@@ -57,7 +57,7 @@ impl DiemClient {
 
     /// Submits a transaction and bumps the sequence number for the sender, pass in `None` for
     /// sender_account if sender's address is not managed by the client.
-    pub fn submit_transaction(&self, transaction: &SignedTransaction) -> Result<()> {
+    pub fn submit_transaction(&self, transaction: &DiemSignedTransaction) -> Result<()> {
         self.client
             .submit(transaction)
             .map_err(Into::into)
@@ -102,7 +102,7 @@ impl DiemClient {
 
     pub fn wait_for_transaction(
         &self,
-        txn: &SignedTransaction,
+        txn: &DiemSignedTransaction,
         timeout: Duration,
     ) -> Result<views::TransactionView, WaitForTransactionError> {
         self.client

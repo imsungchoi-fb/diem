@@ -135,7 +135,7 @@ mod tests {
             diem_id_identifier::DiemIdVaspDomainIdentifier,
             transaction::{
                 metadata::{CoinTradeMetadata, Metadata},
-                SignedTransaction, TransactionPayload,
+                DiemSignedTransaction, TransactionPayload,
                 TransactionPayload::{Script, ScriptFunction},
             },
         },
@@ -239,7 +239,7 @@ mod tests {
             .reply(&filter)
             .await;
         let body = resp.body();
-        let txns: Vec<SignedTransaction> =
+        let txns: Vec<DiemSignedTransaction> =
             bcs::from_bytes(&hex::decode(body).expect("hex encoded response body"))
                 .expect("valid bcs vec");
         assert_eq!(txns.len(), 2);
@@ -276,7 +276,7 @@ mod tests {
             .reply(&filter)
             .await;
         let body = resp.body();
-        let txns: Vec<SignedTransaction> =
+        let txns: Vec<DiemSignedTransaction> =
             bcs::from_bytes(&hex::decode(body).expect("hex encoded response body"))
                 .expect("valid bcs vec");
         assert_eq!(txns.len(), 2);
@@ -433,7 +433,8 @@ mod tests {
         match req["method"].as_str() {
             Some("submit") => {
                 let raw: &str = req["params"][0].as_str().unwrap();
-                let txn: SignedTransaction = bcs::from_bytes(&hex::decode(raw).unwrap()).unwrap();
+                let txn: DiemSignedTransaction =
+                    bcs::from_bytes(&hex::decode(raw).unwrap()).unwrap();
                 assert_eq!(txn.chain_id(), chain_id);
                 if let Script(script) = txn.payload() {
                     match ScriptCall::decode(script) {

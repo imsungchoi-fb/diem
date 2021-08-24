@@ -30,7 +30,7 @@ use diem_types::{
     block_metadata::{new_block_event_key, BlockMetadata, NewBlockEvent},
     on_chain_config::{DiemVersion, OnChainConfig, VMPublishingOption, ValidatorSet},
     transaction::{
-        ChangeSet, SignedTransaction, Transaction, TransactionOutput, TransactionStatus,
+        ChangeSet, DiemSignedTransaction, Transaction, TransactionOutput, TransactionStatus,
         VMValidatorResult,
     },
     vm_status::{KeptVMStatus, VMStatus},
@@ -305,7 +305,7 @@ impl FakeExecutor {
     /// However, this doesn't apply the results of successful transactions to the data store.
     pub fn execute_block(
         &self,
-        txn_block: Vec<SignedTransaction>,
+        txn_block: Vec<DiemSignedTransaction>,
     ) -> Result<Vec<TransactionOutput>, VMStatus> {
         self.execute_transaction_block(
             txn_block
@@ -319,7 +319,7 @@ impl FakeExecutor {
     /// `TransactionOutput`
     pub fn execute_block_and_keep_vm_status(
         &self,
-        txn_block: Vec<SignedTransaction>,
+        txn_block: Vec<DiemSignedTransaction>,
     ) -> Result<Vec<(VMStatus, TransactionOutput)>, VMStatus> {
         DiemVM::execute_block_and_keep_vm_status(
             txn_block
@@ -332,7 +332,7 @@ impl FakeExecutor {
 
     /// Executes the transaction as a singleton block and applies the resulting write set to the
     /// data store. Panics if execution fails
-    pub fn execute_and_apply(&mut self, transaction: SignedTransaction) -> TransactionOutput {
+    pub fn execute_and_apply(&mut self, transaction: DiemSignedTransaction) -> TransactionOutput {
         let mut outputs = self.execute_block(vec![transaction]).unwrap();
         assert!(outputs.len() == 1, "transaction outputs size mismatch");
         let output = outputs.pop().unwrap();
@@ -398,7 +398,7 @@ impl FakeExecutor {
         output
     }
 
-    pub fn execute_transaction(&self, txn: SignedTransaction) -> TransactionOutput {
+    pub fn execute_transaction(&self, txn: DiemSignedTransaction) -> TransactionOutput {
         let txn_block = vec![txn];
         let mut outputs = self
             .execute_block(txn_block)
@@ -429,7 +429,7 @@ impl FakeExecutor {
     }
 
     /// Verifies the given transaction by running it through the VM verifier.
-    pub fn verify_transaction(&self, txn: SignedTransaction) -> VMValidatorResult {
+    pub fn verify_transaction(&self, txn: DiemSignedTransaction) -> VMValidatorResult {
         let vm = DiemVM::new(self.get_state_view());
         vm.validate_transaction(txn, &self.data_store)
     }

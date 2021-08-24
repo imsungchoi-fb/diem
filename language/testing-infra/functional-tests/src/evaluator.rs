@@ -18,9 +18,9 @@ use diem_types::{
     chain_id::ChainId,
     on_chain_config::VMPublishingOption,
     transaction::{
-        Module as TransactionModule, RawTransaction, Script as TransactionScript, ScriptFunction,
-        SignedTransaction, Transaction as DiemTransaction, TransactionOutput, TransactionPayload,
-        TransactionStatus,
+        DiemSignedTransaction, Module as TransactionModule, RawTransaction,
+        Script as TransactionScript, ScriptFunction, Transaction as DiemTransaction,
+        TransactionOutput, TransactionPayload, TransactionStatus,
     },
     vm_status::{KeptVMStatus, StatusCode},
 };
@@ -385,7 +385,7 @@ fn make_script_transaction(
     exec: &FakeExecutor,
     config: &TransactionConfig,
     blob: Vec<u8>,
-) -> Result<SignedTransaction> {
+) -> Result<DiemSignedTransaction> {
     let script = TransactionScript::new(blob, config.ty_args.clone(), config.args.clone());
 
     let params = get_transaction_parameters(exec, config);
@@ -436,7 +436,7 @@ fn make_script_function_transaction(
     config: &TransactionConfig,
     module: ModuleId,
     function: Identifier,
-) -> Result<SignedTransaction> {
+) -> Result<DiemSignedTransaction> {
     let script_function = ScriptFunction::new(
         module,
         function,
@@ -464,7 +464,7 @@ fn make_module_transaction(
     exec: &FakeExecutor,
     config: &TransactionConfig,
     module: CompiledModule,
-) -> Result<SignedTransaction> {
+) -> Result<DiemSignedTransaction> {
     let mut blob = vec![];
     module.serialize(&mut blob)?;
     let module = TransactionModule::new(blob);
@@ -487,7 +487,7 @@ fn make_module_transaction(
 /// Runs a single transaction using the fake executor.
 fn run_transaction(
     exec: &mut FakeExecutor,
-    transaction: SignedTransaction,
+    transaction: DiemSignedTransaction,
 ) -> Result<TransactionOutput> {
     let mut outputs = exec
         .execute_block_and_keep_vm_status(vec![transaction])
@@ -515,7 +515,7 @@ fn run_transaction(
 
 fn run_transaction_exp_mode(
     exec: &mut FakeExecutor,
-    transaction: SignedTransaction,
+    transaction: DiemSignedTransaction,
     log: &mut EvaluationLog,
     config: &TransactionConfig,
 ) {

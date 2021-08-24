@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use criterion::{measurement::Measurement, BatchSize, Bencher};
-use diem_types::transaction::SignedTransaction;
+use diem_types::transaction::DiemSignedTransaction;
 use language_e2e_tests::{
     account_universe::{log_balance_strategy, AUTransactionGen, AccountUniverseGen},
     executor::FakeExecutor,
@@ -83,7 +83,7 @@ struct TransactionBenchState {
     // 6. Add an enum to TransactionBencher that lets callers choose between the fake and real
     //    executors.
     executor: FakeExecutor,
-    transactions: Vec<SignedTransaction>,
+    transactions: Vec<DiemSignedTransaction>,
 }
 
 impl TransactionBenchState {

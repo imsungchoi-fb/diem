@@ -10,7 +10,7 @@ use diem_types::{
     account_config::XUS_NAME,
     chain_id::ChainId,
     mempool_status::MempoolStatusCode,
-    transaction::{GovernanceRole, RawTransaction, Script, SignedTransaction},
+    transaction::{DiemSignedTransaction, GovernanceRole, RawTransaction, Script},
 };
 use once_cell::sync::Lazy;
 use rand::{rngs::StdRng, SeedableRng};
@@ -53,18 +53,18 @@ impl TestTransaction {
     pub(crate) fn make_signed_transaction_with_expiration_time(
         &self,
         exp_timestamp_secs: u64,
-    ) -> SignedTransaction {
+    ) -> DiemSignedTransaction {
         self.make_signed_transaction_impl(100, exp_timestamp_secs)
     }
 
     pub(crate) fn make_signed_transaction_with_max_gas_amount(
         &self,
         max_gas_amount: u64,
-    ) -> SignedTransaction {
+    ) -> DiemSignedTransaction {
         self.make_signed_transaction_impl(max_gas_amount, u64::max_value())
     }
 
-    pub(crate) fn make_signed_transaction(&self) -> SignedTransaction {
+    pub(crate) fn make_signed_transaction(&self) -> DiemSignedTransaction {
         self.make_signed_transaction_impl(100, u64::max_value())
     }
 
@@ -72,7 +72,7 @@ impl TestTransaction {
         &self,
         max_gas_amount: u64,
         exp_timestamp_secs: u64,
-    ) -> SignedTransaction {
+    ) -> DiemSignedTransaction {
         let raw_txn = RawTransaction::new_script(
             TestTransaction::get_address(self.address),
             self.sequence_number,
@@ -101,7 +101,7 @@ impl TestTransaction {
 pub(crate) fn add_txns_to_mempool(
     pool: &mut CoreMempool,
     txns: Vec<TestTransaction>,
-) -> Vec<SignedTransaction> {
+) -> Vec<DiemSignedTransaction> {
     let mut transactions = vec![];
     for transaction in txns {
         let txn = transaction.make_signed_transaction();
@@ -122,7 +122,10 @@ pub(crate) fn add_txn(pool: &mut CoreMempool, transaction: TestTransaction) -> R
     add_signed_txn(pool, transaction.make_signed_transaction())
 }
 
-pub(crate) fn add_signed_txn(pool: &mut CoreMempool, transaction: SignedTransaction) -> Result<()> {
+pub(crate) fn add_signed_txn(
+    pool: &mut CoreMempool,
+    transaction: DiemSignedTransaction,
+) -> Result<()> {
     match pool
         .add_txn(
             transaction.clone(),
@@ -141,7 +144,7 @@ pub(crate) fn add_signed_txn(pool: &mut CoreMempool, transaction: SignedTransact
 
 pub(crate) fn batch_add_signed_txn(
     pool: &mut CoreMempool,
-    transactions: Vec<SignedTransaction>,
+    transactions: Vec<DiemSignedTransaction>,
 ) -> Result<()> {
     for txn in transactions.into_iter() {
         if let Err(e) = add_signed_txn(pool, txn) {
@@ -163,7 +166,7 @@ impl ConsensusMock {
         &mut self,
         mempool: &mut CoreMempool,
         block_size: u64,
-    ) -> Vec<SignedTransaction> {
+    ) -> Vec<DiemSignedTransaction> {
         let block = mempool.get_block(block_size, self.0.clone());
         self.0 = self
             .0
@@ -179,7 +182,7 @@ impl ConsensusMock {
     }
 }
 
-pub(crate) fn exist_in_metrics_cache(mempool: &CoreMempool, txn: &SignedTransaction) -> bool {
+pub(crate) fn exist_in_metrics_cache(mempool: &CoreMempool, txn: &DiemSignedTransaction) -> bool {
     mempool
         .metrics_cache
         .get(&(txn.sender(), txn.sequence_number()))

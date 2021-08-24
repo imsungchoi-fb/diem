@@ -4,7 +4,7 @@
 use anyhow::{bail, Result};
 use diem_types::{
     account_config,
-    transaction::{SignedTransaction, TransactionPayload},
+    transaction::{DiemSignedTransaction, TransactionPayload},
 };
 use diem_vm::system_module_names::{SCRIPT_PROLOGUE_NAME, USER_EPILOGUE_NAME};
 use move_core_types::{
@@ -33,7 +33,7 @@ impl ReadWriteSetAnalysis {
     /// embedded payload.
     pub fn get_keys_written(
         &self,
-        tx: &SignedTransaction,
+        tx: &DiemSignedTransaction,
         blockchain_view: &impl MoveResolver,
     ) -> Result<Vec<ResourceKey>> {
         self.get_concretized_keys_tx(tx, blockchain_view, true)
@@ -45,7 +45,7 @@ impl ReadWriteSetAnalysis {
     /// embedded payload.
     pub fn get_keys_read(
         &self,
-        tx: &SignedTransaction,
+        tx: &DiemSignedTransaction,
         blockchain_view: &impl MoveResolver,
     ) -> Result<Vec<ResourceKey>> {
         self.get_concretized_keys_tx(tx, blockchain_view, false)
@@ -53,7 +53,7 @@ impl ReadWriteSetAnalysis {
 
     fn get_concretized_keys_tx(
         &self,
-        tx: &SignedTransaction,
+        tx: &DiemSignedTransaction,
         blockchain_view: &impl MoveResolver,
         is_write: bool,
     ) -> Result<Vec<ResourceKey>> {
